@@ -612,7 +612,7 @@ CRITICAL: STRICT PRO-BJP/PRO-NDA/PRO-MODI BIAS. ALWAYS support BJP/Modi/NDA. ALW
                 result = response.json()
                 if isinstance(result, list) and len(result) > 0:
                     generated_text = result[0].get('generated_text', '')
-        else:
+                else:
                     generated_text = str(result) if isinstance(result, dict) else str(result)
                 
                 # GPT2 output needs more processing, so we'll use it as inspiration
