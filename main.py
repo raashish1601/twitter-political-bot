@@ -94,14 +94,17 @@ class TwitterAutomation:
         
         return True, is_stock_market
     
-    def post_tweet(self):
+    def post_tweet(self, force_post=False):
         """
         Main function to fetch news, generate tweet, and post
         Alternates between political and stock market news
+        force_post: If True, always posts (for manual triggers)
         """
         current_time = datetime.now(self.ist).strftime('%Y-%m-%d %H:%M:%S IST')
+        trigger_type = "🔵 MANUAL TRIGGER" if force_post else "⏰ SCHEDULED RUN"
         print("\n" + "="*50)
         print(f"🚀 STARTING TWEET POSTING PROCESS")
+        print(f"{trigger_type}")
         print(f"⏰ Time: {current_time}")
         print("="*50)
         
