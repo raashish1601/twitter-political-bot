@@ -334,37 +334,6 @@ class TwitterAutomation:
         print("✅ All connections successful!")
         return True
     
-    def run_scheduled(self):
-        """
-        Run with scheduler (for continuous operation)
-        """
-        print("\n" + "="*50)
-        print("🚀 Twitter Automation Bot Starting...")
-        print("="*50)
-        
-        # Test connections first
-        if not self.test_connection():
-            print("\n❌ Connection test failed. Please check your credentials.")
-            return
-        
-        # Cleanup old entries (keep 30 days for better duplicate prevention)
-        self.news_tracker.cleanup_old_entries(days=30)
-        
-        # Setup scheduler
-        scheduler = TweetScheduler(self.post_tweet)
-        scheduler.setup_schedule()
-        
-        # Post immediately once (optional - remove if you don't want this)
-        # print("\n📤 Posting first tweet now...")
-        # self.post_tweet()
-        
-        # Run scheduler
-        try:
-            scheduler.run()
-        except KeyboardInterrupt:
-            print("\n\n⏹️  Scheduler stopped by user.")
-            sys.exit(0)
-    
     def run_once(self, force_post=False):
         """
         Run once (for testing or manual execution)
