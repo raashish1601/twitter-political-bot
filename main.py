@@ -85,16 +85,24 @@ class TwitterAutomation:
         Main function to fetch news, generate tweet, and post
         Alternates between political and stock market news
         """
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S IST')
         print("\n" + "="*50)
-        print(f"🔄 Starting tweet posting process...")
-        print(f"⏰ Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"🚀 STARTING TWEET POSTING PROCESS")
+        print(f"⏰ Time: {current_time}")
         print("="*50)
         
         # Randomly decide if we should post now (to avoid looking automated)
         should_post, is_stock_market = self._should_post_now()
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S IST')
         
         if not should_post:
-            print(f"\n⏸️  Not posting at this time (randomized schedule)")
+            print("\n" + "="*50)
+            print(f"⏸️  SKIP DECISION")
+            print(f"⏰ Time: {current_time}")
+            print(f"📊 Decision: Not posting at this time")
+            print(f"💡 Reason: Randomized schedule (to avoid looking automated)")
+            print(f"✅ Status: Skipped successfully")
+            print("="*50)
             return
         
         post_type = "📈 Stock Market" if is_stock_market else "🏛️  Politics"
@@ -119,7 +127,13 @@ class TwitterAutomation:
             articles = self.news_fetcher.fetch_latest_news(max_results=15)
         
         if not articles:
-            print(f"❌ No {post_type.lower()} articles found. Skipping this post.")
+            print("\n" + "="*50)
+            print(f"⏸️  SKIP DECISION")
+            print(f"⏰ Time: {current_time}")
+            print(f"📌 Type: {post_type}")
+            print(f"❌ Reason: No articles found")
+            print(f"✅ Status: Skipped (no content available)")
+            print("="*50)
             return
         
         print(f"✅ Found {len(articles)} articles")
@@ -141,7 +155,13 @@ class TwitterAutomation:
                 break
         
         if not article_to_post:
-            print(f"⚠️  All recent {post_type.lower()} articles have already been posted. Skipping.")
+            print("\n" + "="*50)
+            print(f"⏸️  SKIP DECISION")
+            print(f"⏰ Time: {current_time}")
+            print(f"📌 Type: {post_type}")
+            print(f"⚠️  Reason: All recent articles already posted")
+            print(f"✅ Status: Skipped (avoiding duplicates)")
+            print("="*50)
             return
         
         # Get article summary
@@ -164,7 +184,13 @@ class TwitterAutomation:
             article_summary['title'], 
             tweet_text
         ):
-            print("🚫 Generated tweet is too similar to a previous post. Skipping.")
+            print("\n" + "="*50)
+            print(f"⏸️  SKIP DECISION")
+            print(f"⏰ Time: {current_time}")
+            print(f"📌 Type: {post_type}")
+            print(f"🚫 Reason: Generated tweet too similar to previous post")
+            print(f"✅ Status: Skipped (avoiding duplicate content)")
+            print("="*50)
             return
         
         # Post to Twitter with image if available
@@ -182,10 +208,21 @@ class TwitterAutomation:
                 tweet_id,
                 tweet_text  # Store tweet text for duplicate checking
             )
-            print("\n✅ Tweet posted successfully!")
+            print("\n" + "="*50)
+            print(f"✅ TWEET POSTED SUCCESSFULLY!")
+            print(f"📝 Tweet ID: {tweet_id}")
+            print(f"📌 Type: {post_type}")
+            print(f"⏰ Posted at: {current_time}")
+            print(f"🔗 URL: https://twitter.com/i/web/status/{tweet_id}")
+            print("="*50)
             self.post_counter += 1
         else:
-            print("\n❌ Failed to post tweet.")
+            print("\n" + "="*50)
+            print(f"❌ FAILED TO POST TWEET")
+            print(f"⏰ Time: {current_time}")
+            print(f"📌 Type: {post_type}")
+            print(f"⚠️  Status: Posting failed")
+            print("="*50)
     
     def test_connection(self):
         """
