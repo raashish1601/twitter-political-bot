@@ -135,6 +135,7 @@ class NewsFetcher:
             'description': article.get('description', ''),
             'url': article.get('url', ''),
             'source': article.get('source', {}).get('name', ''),
-            'published_at': article.get('publishedAt', '')
+            'published_at': article.get('publishedAt', ''),
+            'image_url': article.get('urlToImage', '')  # Add image URL
         }
 

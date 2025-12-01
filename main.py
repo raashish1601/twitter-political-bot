@@ -75,9 +75,12 @@ class TwitterAutomation:
         print(f"✅ Generated tweet ({len(tweet_text)} chars)")
         print(f"📝 Preview: {tweet_text[:150]}...")
         
-        # Post to Twitter
+        # Post to Twitter with image if available
         print("\n🐦 Posting to Twitter...")
-        success, tweet_id = self.twitter_poster.post_tweet(tweet_text)
+        image_url = article_summary.get('image_url', '')
+        if image_url:
+            print(f"🖼️  Article has image, will include in tweet")
+        success, tweet_id = self.twitter_poster.post_tweet(tweet_text, image_url=image_url)
         
         if success:
             # Mark as posted
