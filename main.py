@@ -109,7 +109,7 @@ class TwitterAutomation:
         print("="*50)
         
         # Randomly decide if we should post now (to avoid looking automated)
-        should_post, is_stock_market = self._should_post_now()
+        should_post, is_stock_market = self._should_post_now(force_post=force_post)
         current_time = datetime.now(self.ist).strftime('%Y-%m-%d %H:%M:%S IST')
         
         if not should_post:
