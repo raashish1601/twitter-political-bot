@@ -54,6 +54,7 @@ class ContentGenerator:
 Trending Topic: {trending_topic}{other_trends}
 
 Requirements:
+- COVER DIVERSE TRENDING TOPICS: Don't just focus on politics - cover entertainment, sports, technology, business, culture, social issues, viral content, movies, celebrities, etc.
 - MUST CREATE EXTREME CONTROVERSY - use OFFENSIVE LANGUAGE, STRONG WORDS, challenge popular opinions brutally, expose hidden truths with INSULTS, question everything with SAVAGE attacks
 - EXTREMELY funky, witty, OFFENSIVE, and provocative - make people ANGRY, DEBATE, and SHARE
 - Use bold OFFENSIVE statements, contrarian takes with STRONG LANGUAGE, expose manipulation or hidden agendas brutally
@@ -64,6 +65,7 @@ Requirements:
 - Keep it under 280 characters
 - Be clever, funky, OFFENSIVE, and absolutely CONTROVERSIAL with STRONG LANGUAGE - make people react with ANGER!
 - Use curse words, insults, and brutal language when appropriate
+- DIVERSITY: Cover various trending topics - entertainment, sports, tech, business, culture, social issues, not just politics
 
 Generate ONLY the tweet text with the trending hashtag, nothing else:"""
         

@@ -142,10 +142,23 @@ class NewsFetcher:
     
     def fetch_stock_market_news(self, max_results=10):
         """
-        Fetch latest Indian stock market news
+        Fetch latest Indian stock market news - diverse topics
         """
-        # Keywords for Indian stock markets
-        query = '(NSE OR BSE OR "Indian stock market" OR "Sensex" OR "Nifty" OR "stock market" OR "share market" OR "equity market" OR "IPO" OR "stocks" OR "investors") AND India'
+        # Diverse stock market topics: stocks, IPOs, companies, sectors, economy, etc.
+        import random
+        queries = [
+            '(NSE OR BSE OR "Indian stock market" OR "Sensex" OR "Nifty" OR "stock market" OR "share market" OR "equity market") AND India',
+            '(IPO OR "initial public offering" OR "stock listing" OR "public issue" OR "share sale") AND India',
+            '(India stocks OR "Indian stocks" OR "stock price" OR "share price" OR "equity" OR "shares") AND India',
+            '(India company OR "Indian company" OR "corporate" OR "business" OR "firm" OR "enterprise") AND India',
+            '(India sector OR "Indian sector" OR "banking" OR "IT" OR "pharma" OR "auto" OR "FMCG" OR "real estate") AND India',
+            '(India economy OR "Indian economy" OR "GDP" OR "economic growth" OR "inflation" OR "RBI" OR "finance") AND India',
+            '(India investment OR "investor" OR "mutual fund" OR "portfolio" OR "trading" OR "broker") AND India',
+            '(India startup OR "unicorn" OR "venture capital" OR "funding" OR "investment") AND India',
+            '(India market OR "market analysis" OR "market trend" OR "bull market" OR "bear market") AND India',
+            '(India finance OR "financial news" OR "banking" OR "insurance" OR "NBFC" OR "fintech") AND India'
+        ]
+        query = random.choice(queries)
         
         # Get news from last 24 hours
         from_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
@@ -166,7 +179,7 @@ class NewsFetcher:
             
             if data.get('status') == 'ok':
                 articles = data.get('articles', [])
-                return articles[:5]  # Return top 5
+                return articles[:max_results]  # Return requested number
             else:
                 print(f"News API error: {data.get('message', 'Unknown error')}")
                 return []
