@@ -191,7 +191,7 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Include hashtag
             if self.hf_api_key:
                 headers["Authorization"] = f"Bearer {self.hf_api_key}"
             
-            api_url = f"https://api-inference.huggingface.co/models/{model_name}"
+            api_url = f"https://router.huggingface.co/models/{model_name}"
             payload = {
                 "inputs": prompt_text,
                 "parameters": {"max_new_tokens": 150, "temperature": 1.0, "return_full_text": False}
@@ -512,7 +512,7 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Pro-BJP/NDA bia
                 headers["Authorization"] = f"Bearer {self.hf_api_key}"
             
             # Use Hugging Face Inference API
-            api_url = f"https://api-inference.huggingface.co/models/{model_name}"
+            api_url = f"https://router.huggingface.co/models/{model_name}"
             
             payload = {
                 "inputs": prompt_text,
@@ -580,7 +580,7 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Pro-BJP/NDA bia
             
             prompt_text = f"Create a controversial Twitter post about: {title}. {description[:100]}. Max 280 chars."
             
-            api_url = f"https://api-inference.huggingface.co/models/{model_name}"
+            api_url = f"https://router.huggingface.co/models/{model_name}"
             
             payload = {
                 "inputs": prompt_text,
