@@ -57,7 +57,10 @@ class TwitterAutomation:
         article_to_post = None
         for article in articles:
             article_url = article.get('url', '')
-            if article_url and not self.news_tracker.is_already_posted(article_url):
+            article_title = article.get('title', '')
+            
+            # Check for duplicates before generating tweet
+            if article_url and not self.news_tracker.is_already_posted(article_url, article_title):
                 article_to_post = article
                 break
         
@@ -75,6 +78,15 @@ class TwitterAutomation:
         print(f"✅ Generated tweet ({len(tweet_text)} chars)")
         print(f"📝 Preview: {tweet_text[:150]}...")
         
+        # STEP 6: Final duplicate check on generated tweet content
+        if self.news_tracker.is_already_posted(
+            article_summary['url'], 
+            article_summary['title'], 
+            tweet_text
+        ):
+            print("🚫 Generated tweet is too similar to a previous post. Skipping.")
+            return
+        
         # Post to Twitter with image if available
         print("\n🐦 Posting to Twitter...")
         image_url = article_summary.get('image_url', '')
@@ -83,11 +95,12 @@ class TwitterAutomation:
         success, tweet_id = self.twitter_poster.post_tweet(tweet_text, image_url=image_url)
         
         if success:
-            # Mark as posted
+            # Mark as posted (including tweet text for future duplicate detection)
             self.news_tracker.mark_as_posted(
                 article_summary['url'],
                 article_summary['title'],
-                tweet_id
+                tweet_id,
+                tweet_text  # Store tweet text for duplicate checking
             )
             print("\n✅ Tweet posted successfully!")
         else:
@@ -146,8 +159,8 @@ class TwitterAutomation:
             print("\n❌ Connection test failed. Please check your credentials.")
             return
         
-        # Cleanup old entries
-        self.news_tracker.cleanup_old_entries(days=7)
+        # Cleanup old entries (keep 30 days for better duplicate prevention)
+        self.news_tracker.cleanup_old_entries(days=30)
         
         # Setup scheduler
         scheduler = TweetScheduler(self.post_tweet)
