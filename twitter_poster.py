@@ -5,6 +5,8 @@ import tweepy
 import os
 import requests
 import tempfile
+import re
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -165,10 +167,17 @@ class TwitterPoster:
             error_msg = str(e)
             if '403' in error_msg or 'Forbidden' in error_msg:
                 print(f"⚠️  Twitter trends API not available (requires higher access level)")
+                print(f"🔄 Trying web scraping for Twitter trends...")
+                scraped_trends = self._scrape_twitter_trends()
+                if scraped_trends:
+                    return scraped_trends
                 print(f"🔄 Falling back to NewsAPI for trending topics...")
                 return self._get_trending_from_newsapi()
             else:
                 print(f"⚠️  Could not fetch trends: {e}")
+                scraped_trends = self._scrape_twitter_trends()
+                if scraped_trends:
+                    return scraped_trends
                 return self._get_trending_from_newsapi()
     
     def _get_trending_from_newsapi(self):
@@ -241,5 +250,117 @@ class TwitterPoster:
             return []
         except Exception as e:
             print(f"⚠️  Could not fetch trending topics from NewsAPI: {e}")
+            return []
+    
+    def _scrape_twitter_trends(self):
+        """
+        Scrape Twitter trending topics from the web (fallback method)
+        NOTE: This may violate Twitter's ToS. Use at your own risk.
+        For production, consider upgrading to Twitter API Basic tier ($200/month)
+        """
+        try:
+            # Twitter trends URL for India
+            trends_url = "https://twitter.com/i/api/2/guide.json"
+            
+            # Alternative: Try to access trends page directly
+            # Twitter uses dynamic content, so we'll try multiple approaches
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+            }
+            
+            # Try scraping from Twitter's explore/trending page
+            # Note: Twitter heavily protects this, so we'll use a simpler approach
+            # Try accessing via mobile version or use alternative methods
+            
+            # Method 1: Try to get trends from Twitter's public API endpoint (if accessible)
+            try:
+                # Twitter sometimes exposes trends via this endpoint
+                trends_api_url = "https://api.twitter.com/1.1/trends/place.json?id=23424848"  # India WOEID
+                
+                # We can't use OAuth here, so try alternative
+                # Use a public trends aggregator or fallback to NewsAPI
+                pass
+            except:
+                pass
+            
+            # Method 2: Use a trends aggregator service (free alternative)
+            # Some services aggregate Twitter trends
+            try:
+                # Try using a third-party trends API (if available)
+                # Example: trends24.in or similar services
+                trends_aggregator_url = "https://trends24.in/india/"
+                
+                response = requests.get(trends_aggregator_url, headers=headers, timeout=10)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                    
+                    # Look for trending topics in the HTML
+                    trending_topics = []
+                    
+                    # Try to find trend elements (structure may vary)
+                    # Look for common patterns
+                    trend_elements = soup.find_all(['a', 'span', 'div'], 
+                                                   class_=re.compile(r'trend|hashtag|topic', re.I))
+                    
+                    for element in trend_elements[:20]:
+                        text = element.get_text(strip=True)
+                        if text and len(text) > 2 and len(text) < 50:
+                            # Clean up the text
+                            text = re.sub(r'[^\w\s#]', '', text)
+                            if text and text not in trending_topics:
+                                # Add # if not present
+                                if not text.startswith('#'):
+                                    text = f"#{text.replace(' ', '')}"
+                                trending_topics.append(text)
+                    
+                    if trending_topics:
+                        print(f"✅ Scraped {len(trending_topics)} trending topics from trends aggregator")
+                        return trending_topics[:10]
+            except Exception as e:
+                print(f"⚠️  Could not scrape from trends aggregator: {e}")
+            
+            # Method 3: Extract from Twitter's JSON-LD or meta tags (if accessible)
+            try:
+                # Try accessing Twitter's explore page
+                explore_url = "https://twitter.com/explore/tabs/trending"
+                response = requests.get(explore_url, headers=headers, timeout=10, allow_redirects=True)
+                
+                if response.status_code == 200:
+                    # Twitter loads content dynamically, so HTML scraping is limited
+                    # Look for any trend indicators in the HTML
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                    
+                    # Try to find trend data in script tags (Twitter embeds JSON)
+                    scripts = soup.find_all('script', type='application/json')
+                    for script in scripts:
+                        try:
+                            data = script.string
+                            if data and 'trend' in data.lower():
+                                # Try to extract trend names using regex
+                                trends = re.findall(r'["\']([^"\']*trend[^"\']*)["\']', data, re.I)
+                                if trends:
+                                    trending_topics = [f"#{t.replace(' ', '')}" if not t.startswith('#') else t 
+                                                      for t in trends[:10] if len(t) > 2]
+                                    if trending_topics:
+                                        print(f"✅ Extracted {len(trending_topics)} trends from page data")
+                                        return trending_topics[:10]
+                        except:
+                            continue
+            except Exception as e:
+                print(f"⚠️  Could not scrape from Twitter explore page: {e}")
+            
+            # If all scraping methods fail, return empty
+            print("⚠️  Web scraping failed - Twitter's anti-scraping measures may be blocking access")
+            print("💡 Consider: 1) Upgrading to Twitter API Basic tier ($200/month) for official trends access")
+            print("             2) Using NewsAPI fallback (already implemented)")
+            return []
+            
+        except Exception as e:
+            print(f"⚠️  Error during web scraping: {e}")
             return []
 
