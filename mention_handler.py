@@ -305,13 +305,16 @@ class MentionHandler:
         """
         from text_utils import ensure_complete_tweet, truncate_tweet_complete
         
+        # FIRST: Ensure the base tweet is complete (fix any incomplete sentences)
+        tweet_text = ensure_complete_tweet(tweet_text, max_length=280)
+        
         # Use provided mentions or extract them
         if mentions is None:
             mentions = self.extract_mentions(tweet_text, is_stock_market)
         
         if not mentions:
-            # Even without mentions, ensure tweet is complete
-            return ensure_complete_tweet(tweet_text, max_length=280)
+            # No mentions to add, return the complete tweet
+            return tweet_text
         
         # Calculate space needed for mentions
         mentions_text = ' ' + ' '.join(mentions)
@@ -323,23 +326,17 @@ class MentionHandler:
         
         if total_length <= 280:
             # Simple case: just append mentions
-            result = tweet_text + mentions_text
-            # Ensure the final result is complete
-            return ensure_complete_tweet(result, max_length=280)
+            return tweet_text + mentions_text
         else:
             # Need to trim tweet to fit mentions
             available_space = 280 - mentions_length
             
             if available_space < 50:  # Too little space, don't add mentions
-                # But still ensure tweet is complete
-                return ensure_complete_tweet(tweet_text, max_length=280)
+                return tweet_text
             
             # Trim tweet at sentence boundary to ensure completeness
             trimmed_tweet = truncate_tweet_complete(tweet_text, available_space)
-            result = trimmed_tweet + mentions_text
-            
-            # Final check - ensure complete
-            return ensure_complete_tweet(result, max_length=280)
+            return trimmed_tweet + mentions_text
     
     def get_controversy_mentions(self, topic_type: str = 'politics') -> List[str]:
         """
