@@ -23,15 +23,26 @@ class TwitterAutomation:
         self.post_counter = 0  # Track post count for alternating
         self.ist = pytz.timezone('Asia/Kolkata')  # IST timezone
         
-    def _should_post_now(self):
+    def _should_post_now(self, force_post=False):
         """
         Randomly decide if we should post now (to avoid looking automated)
         Uses date-based seed for consistent randomness per day, but different each day
+        If force_post is True (manual trigger), always returns True
         Returns: (should_post: bool, is_stock_market: bool)
         """
         # Get current time in IST
         current_time = datetime.now(self.ist)
         current_hour = current_time.hour
+        
+        # Manual triggers should never skip
+        if force_post:
+            # Still determine type randomly but always post
+            stock_market_preferred = (
+                (9 <= current_hour < 11) or (14 <= current_hour < 16) or (17 <= current_hour < 19)
+            )
+            is_stock_market = random.random() < 0.65 if stock_market_preferred else random.random() < 0.35
+            return True, is_stock_market
+        
         current_date = current_time.strftime('%Y-%m-%d')
         
         # Use date + hour as seed for consistent randomness per day
