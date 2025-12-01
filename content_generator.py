@@ -597,7 +597,7 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Pro-BJP/NDA bia
                 result = response.json()
                 if isinstance(result, list) and len(result) > 0:
                     generated_text = result[0].get('generated_text', '')
-                else:
+        else:
                     generated_text = str(result) if isinstance(result, dict) else str(result)
                 
                 # GPT2 output needs more processing, so we'll use it as inspiration
@@ -651,7 +651,7 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Pro-BJP/NDA bia
         tweet = f"{statement}\n\n{hashtags}"
         
         # Final length check
-        if len(tweet) > 280:
+            if len(tweet) > 280:
                 excess = len(tweet) - 280
             statement = statement[:len(statement)-excess-3] + "..."
             tweet = f"{statement}\n\n{hashtags}"
