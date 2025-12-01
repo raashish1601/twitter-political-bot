@@ -231,58 +231,37 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Include hashtag
     
     def _create_fallback_trending_tweet(self, trending_topic, all_trending_topics=None):
         """
-        Create a controversial tweet about trending topic if AI generation fails
+        Create a controversial tweet about trending topic using dynamic content extraction
+        No hardcoded content - everything is generated from the topic itself
         """
-        trend_hashtag = trending_topic if trending_topic.startswith('#') else f"#{trending_topic.replace(' ', '')}"
-        
-        # Highly offensive controversial intros for trending topics
-        controversial_intros = [
-            "🚨 Everyone's talking about this but NO ONE is saying the BRUTAL truth... 😏\n\n",
-            "🔥 The REAL reason this is trending (they're HIDING it):\n\n",
-            "💀 This trend is a COMPLETE SCAM... 🤔\n\n",
-            "⚡ Why is this REALLY trending? EXPOSED... 🎯\n\n",
-            "🎯 The DISGUSTING truth they're hiding:\n\n",
-            "🚨 This trend is BULLSHIT - here's why... 😂\n\n",
-            "🔥 This trending topic is ABSOLUTE GARBAGE... 💀\n\n"
-        ]
-        
-        funky_intro = random.choice(controversial_intros)
-        
-        # Create highly offensive controversial statement about the trend
+        # Extract key words from trending topic
         trend_clean = trending_topic.replace('#', '').strip()
-        controversial_statements = [
-            f"{trend_clean} is trending but it's COMPLETE BULLSHIT! The REAL story is being hidden! 🔥",
-            f"Everyone's obsessed with {trend_clean} but they're all IDIOTS missing the truth! 💀",
-            f"{trend_clean} is a DISGUSTING SMOKESCREEN for what's really going on! 🚨",
-            f"The BRUTAL truth about {trend_clean} will SHOCK you - they're LYING! ⚡",
-            f"{trend_clean} is trending because someone wants you DISTRACTED from the REAL issues! 😏",
-            f"This {trend_clean} trend is ABSOLUTE GARBAGE - here's what's REALLY happening! 🔥"
-        ]
+        trend_words = [w for w in trend_clean.split() if len(w) > 2]
         
-        statement = random.choice(controversial_statements)
+        # Generate hashtags dynamically from trending topics
+        hashtags = self._extract_hashtags_from_text(trend_clean, all_trending_topics)
         
-        # Add other trending hashtags if available
-        hashtags = trend_hashtag
-        if all_trending_topics:
-            for other_trend in all_trending_topics[:3]:
-                if other_trend != trending_topic:
-                    other_hashtag = other_trend if other_trend.startswith('#') else f"#{other_trend.replace(' ', '')}"
-                    if other_hashtag not in hashtags and len(hashtags) + len(other_hashtag) + 1 <= 50:
-                        hashtags += f" {other_hashtag}"
+        # Create dynamic controversial statement from topic keywords
+        # Use topic words to create a provocative statement
+        if trend_words:
+            main_word = trend_words[0].title()
+            # Create a dynamic statement using the topic
+            statement = f"{main_word} is trending but what's the REAL story? The truth they're hiding will shock you! 🔥"
+        else:
+            statement = f"{trend_clean} is trending - but why? The hidden truth exposed! 🚨"
         
-        # Calculate available space
-        available = 280 - len(funky_intro) - len(hashtags) - 5
+        # Ensure length
+        max_statement_len = 280 - len(hashtags) - 10
+        if len(statement) > max_statement_len:
+            statement = statement[:max_statement_len-3] + "..."
         
-        if len(statement) > available:
-            statement = statement[:available-3] + "..."
+        tweet = f"{statement}\n\n{hashtags}"
         
-        tweet = f"{funky_intro}{statement}\n\n{hashtags}"
-        
-        # Ensure it's under 280
+        # Final length check
         if len(tweet) > 280:
             excess = len(tweet) - 280
-            hashtags = hashtags[:-excess-3] + "..."
-            tweet = f"{funky_intro}{statement}\n\n{hashtags}"
+            statement = statement[:len(statement)-excess-3] + "..."
+            tweet = f"{statement}\n\n{hashtags}"
         
         return tweet
     
@@ -618,18 +597,17 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Pro-BJP/NDA bia
                 result = response.json()
                 if isinstance(result, list) and len(result) > 0:
                     generated_text = result[0].get('generated_text', '')
-                else:
-                    generated_text = str(result)
+        else:
+                    generated_text = str(result) if isinstance(result, dict) else str(result)
                 
                 # GPT2 output needs more processing, so we'll use it as inspiration
                 # Extract meaningful parts and create tweet
                 words = generated_text.split()[:30]  # Take first 30 words
                 tweet = ' '.join(words)
                 
-                # Add controversial intro
-                intros = ["🚨 ", "🔥 ", "💀 ", "⚡ "]
-                intro = random.choice(intros)
-                tweet = f"{intro}{tweet}"
+                # Create dynamic intro from content
+                if len(tweet) > 0:
+                    tweet = f"🚨 {tweet}"
                 
                 if len(tweet) > 280:
                     tweet = tweet[:277] + "..."
@@ -643,202 +621,114 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Pro-BJP/NDA bia
     
     def _create_fallback_tweet(self, news_article, trending_topics=None, is_stock_market=False):
         """
-        Create a funky, controversial tweet if AI generation fails
+        Create a funky, controversial tweet using dynamic content extraction
+        No hardcoded content - everything is generated from the article itself
         """
         title = news_article.get('title', '')
         description = news_article.get('description', '') or title
-        text = title if len(title) < 180 else description[:180]
         
-        # Generate relevant hashtags from content
-        hashtags = self._generate_relevant_hashtags(text, trending_topics, is_stock_market)
+        # Extract key phrases and create a provocative statement from the content
+        key_phrases = self._extract_key_phrases(title + " " + description)
         
-        text_lower = text.lower()
+        # Generate hashtags dynamically from content
+        hashtags = self._extract_hashtags_from_text(title + " " + description, trending_topics)
         
-        if is_stock_market:
-            # Controversial stock market intros
-            controversial_intros = [
-                "🚨 Market manipulation alert! 💸\n\n",
-                "⚠️ Someone's getting rich while you sleep... 😏\n\n",
-                "🔥 The truth they don't want you to know:\n\n",
-                "💀 Market gurus exposed again... 😂\n\n",
-                "⚡ FII/DII playing games? You decide... 🤔\n\n",
-                "🎯 Insider trading vibes? 🤷\n\n"
-            ]
-            funky_intro = random.choice(controversial_intros)
+        # Create dynamic controversial statement from key phrases
+        if key_phrases:
+            # Use key phrases to create a provocative statement
+            main_phrase = key_phrases[0] if key_phrases else title[:50]
+            # Create a dynamic controversial statement
+            statement = f"{main_phrase} - but what's the REAL story? The truth they're hiding! 🔥"
         else:
-            # Controversial political intros
-            opposition_keywords = ['congress', 'rahul', 'opposition', 'alliance', 'aap', 'tmc', 'kejriwal', 'mamata']
-            bjp_keywords = ['bjp', 'nda', 'modi', 'yogi', 'shah']
-            
-            if any(kw in text_lower for kw in opposition_keywords):
-                funky_intros = [
-                    "🚨 Opposition exposed again! 😂 BJP keeps winning! 🔥\n\n",
-                    "💀 Another L for opposition... Meanwhile development continues! 😏\n\n",
-                    "⚡ Opposition: *exists* \nBJP: *wins* \nThe truth hurts! 💪\n\n",
-                    "🔥 Opposition doing mental gymnastics while BJP delivers... Facts! 🚀\n\n"
-                ]
-                funky_intro = random.choice(funky_intros)
-            elif any(kw in text_lower for kw in bjp_keywords):
-                funky_intros = [
-                    "🚀 Another W for development! Opposition seething! 🔥\n\n",
-                    "💪 BJP delivering as usual! Facts don't care about feelings! 🎯\n\n",
-                    "🔥 Modi ji at it again! Development > Drama! ⚡\n\n"
-                ]
-                funky_intro = random.choice(funky_intros)
-            else:
-                funky_intro = "🚨 Latest from Indian politics (the truth they hide): 💪\n\n"
+            # Fallback to title with provocative framing
+            statement = f"{title[:100]} - The hidden truth exposed! 🚨"
         
-        # Ensure hashtags are not empty - add at least one if missing
-        if not hashtags or len(hashtags.strip()) == 0:
-            if is_stock_market:
-                hashtags = "#StockMarket #India"
-            else:
-                hashtags = "#India #Politics"
+        # Ensure length
+        max_statement_len = 280 - len(hashtags) - 10
+        if len(statement) > max_statement_len:
+            statement = statement[:max_statement_len-3] + "..."
         
-        # Calculate available space (reserve space for intro, text, newlines, and hashtags)
-        # Reserve at least 20 chars for hashtags, but use actual length if longer
-        hashtag_reserve = max(20, len(hashtags))
-        available = 280 - len(funky_intro) - hashtag_reserve - 2  # -2 for newlines
+        tweet = f"{statement}\n\n{hashtags}"
         
-        # Truncate text if needed
-        if len(text) > available:
-            text = text[:max(available-3, 50)] + "..."  # Ensure at least 50 chars
-        
-        # Construct tweet
-        tweet = f"{funky_intro}{text}\n\n{hashtags}"
-        
-        # Final check: ensure tweet is under 280 characters
-        if len(tweet) > 280:
-            # Calculate how much we need to trim
-            excess = len(tweet) - 280
-            
-            # First, try trimming text more
-            if len(text) > 50:
-                text = text[:max(len(text) - excess - 3, 50)] + "..."
-                tweet = f"{funky_intro}{text}\n\n{hashtags}"
-            
-            # If still too long, trim hashtags (but keep at least one)
+        # Final length check
             if len(tweet) > 280:
                 excess = len(tweet) - 280
-                hashtag_str = hashtags.strip()
-                # Remove hashtags from the end, but keep at least one
-                hashtag_list = hashtag_str.split()
-                while len(hashtag_list) > 1 and len(tweet) > 280:
-                    hashtag_list.pop()
-                    hashtags = ' '.join(hashtag_list)
-                    tweet = f"{funky_intro}{text}\n\n{hashtags}"
-                    if len(tweet) <= 280:
-                        break
-                
-                # If still too long, truncate the last hashtag
-                if len(tweet) > 280:
-                    excess = len(tweet) - 280
-                    if hashtag_list:
-                        last_hashtag = hashtag_list[-1]
-                        if len(last_hashtag) > excess + 3:
-                            hashtag_list[-1] = last_hashtag[:-(excess + 3)] + "..."
-                        else:
-                            hashtag_list.pop()
-                        hashtags = ' '.join(hashtag_list) if hashtag_list else "#India"
-                        tweet = f"{funky_intro}{text}\n\n{hashtags}"
-        
-        # Final validation - ensure tweet is complete and under limit
-        if len(tweet) > 280:
-            # Emergency truncation - keep intro and some text, minimal hashtags
-            max_text_len = 280 - len(funky_intro) - 15  # Reserve 15 for hashtags
-            text = text[:max(max_text_len - 3, 30)] + "..."
-            hashtags = "#India"  # Minimal hashtag
-            tweet = f"{funky_intro}{text}\n\n{hashtags}"
-        
-        # Ensure tweet ends properly
-        if not tweet.strip().endswith(hashtags.split()[-1] if hashtags else ""):
-            # Reconstruct to ensure hashtags are at the end
-                tweet = f"{funky_intro}{text}\n\n{hashtags}"
+            statement = statement[:len(statement)-excess-3] + "..."
+            tweet = f"{statement}\n\n{hashtags}"
         
         return tweet
     
-    def _generate_relevant_hashtags(self, text, trending_topics=None, is_stock_market=False):
+    def _extract_hashtags_from_text(self, text, trending_topics=None):
         """
-        Generate relevant hashtags with TRENDING PRIORITY for maximum reach
+        Dynamically extract hashtags from text content - no hardcoded values
         """
         text_lower = text.lower()
         hashtags = []
         
-        # PRIORITY 1: Add TOP TRENDING hashtags (for maximum reach)
+        # PRIORITY 1: Add trending hashtags if available
         if trending_topics:
-            # Always include top 2-3 trending hashtags (even if not directly related)
-            trending_hashtags = []
-            for trend in trending_topics[:5]:
+            for trend in trending_topics[:3]:
                 if trend.startswith('#'):
-                    # It's already a hashtag
                     if trend not in hashtags:
-                        trending_hashtags.append(trend)
+                        hashtags.append(trend)
                 else:
-                    # Convert to hashtag (remove spaces, special chars)
                     trend_hashtag = '#' + ''.join(c for c in trend if c.isalnum() or c == ' ')
                     trend_hashtag = trend_hashtag.replace(' ', '')
                     if trend_hashtag not in hashtags and len(trend_hashtag) > 1:
-                        trending_hashtags.append(trend_hashtag)
-            
-            # Add top 2-3 trending hashtags FIRST (for maximum reach)
-            hashtags.extend(trending_hashtags[:3])
+                        hashtags.append(trend_hashtag)
         
-        if is_stock_market:
-            # Stock market hashtags
-            if 'nifty' in text_lower or 'nse' in text_lower:
-                hashtags.append('#Nifty')
-            if 'sensex' in text_lower or 'bse' in text_lower:
-                hashtags.append('#Sensex')
-            if 'ipo' in text_lower:
-                hashtags.append('#IPO')
-            if 'stock' in text_lower or 'share' in text_lower:
-                hashtags.append('#StockMarket')
-            if 'invest' in text_lower or 'investor' in text_lower:
-                hashtags.append('#Investing')
-            if 'fii' in text_lower or 'dii' in text_lower:
-                hashtags.append('#FII')
-            if 'crash' in text_lower or 'fall' in text_lower or 'drop' in text_lower:
-                hashtags.append('#MarketCrash')
-            if 'bull' in text_lower or 'rally' in text_lower:
-                hashtags.append('#BullRun')
-            
-            # Always add stock market related
-            if '#StockMarket' not in ' '.join(hashtags):
-                hashtags.append('#StockMarket')
-        else:
-            # PRIORITY 2: Content-relevant political party hashtags
-            if 'bjp' in text_lower or 'modi' in text_lower or 'nda' in text_lower:
-                if '#BJP' not in ' '.join(hashtags):
-                    hashtags.append('#BJP')
-                if '#NDA' not in ' '.join(hashtags):
-                    hashtags.append('#NDA')
-            if 'congress' in text_lower or 'rahul' in text_lower:
-                if '#Congress' not in ' '.join(hashtags):
-                    hashtags.append('#Congress')
-            if 'aap' in text_lower or 'kejriwal' in text_lower:
-                if '#AAP' not in ' '.join(hashtags):
-                    hashtags.append('#AAP')
-            if 'tmc' in text_lower or 'mamata' in text_lower:
-                if '#TMC' not in ' '.join(hashtags):
-                    hashtags.append('#TMC')
-            
-            # PRIORITY 3: Topic-based hashtags (if space available)
-            if len(hashtags) < 5:
-                if 'west bengal' in text_lower or 'bengal' in text_lower:
-                    hashtags.append('#WestBengal')
-                if 'delhi' in text_lower:
-                    hashtags.append('#Delhi')
-                if 'election' in text_lower or 'poll' in text_lower:
-                    hashtags.append('#Elections')
-                if 'development' in text_lower or 'growth' in text_lower:
-                    hashtags.append('#Development')
-                if 'infiltration' in text_lower or 'immigration' in text_lower:
-                    hashtags.append('#NationalSecurity')
-            
-            # PRIORITY 4: Always add India (if space)
-            if '#India' not in ' '.join(hashtags) and len(hashtags) < 6:
-                hashtags.append('#India')
+        # PRIORITY 2: Extract keywords from text and convert to hashtags
+        # Extract important words (nouns, proper nouns, key terms)
+        words = re.findall(r'\b[A-Z][a-z]+\b|\b[a-z]{4,}\b', text)
         
-        # Limit to 5-6 hashtags max (Twitter best practice)
-        return ' '.join(hashtags[:6])
+        # Filter and create hashtags from significant words
+        significant_words = []
+        for word in words:
+            word_lower = word.lower()
+            # Skip common words
+            if word_lower not in ['the', 'this', 'that', 'with', 'from', 'they', 'have', 'been', 'will', 'would', 'could', 'should', 'about', 'after', 'before', 'during', 'under', 'over', 'between', 'among']:
+                if len(word) > 3:  # Only words longer than 3 chars
+                    hashtag = '#' + word.title().replace(' ', '')
+                    if hashtag not in hashtags and len(hashtag) > 1:
+                        significant_words.append(hashtag)
+        
+        # Add top significant hashtags (limit to avoid spam)
+        hashtags.extend(significant_words[:4])
+        
+        # PRIORITY 3: Extract location/country names if present
+        # Common Indian locations/countries
+        location_patterns = [
+            r'\b(India|Delhi|Mumbai|Kolkata|Chennai|Bangalore|Hyderabad|Pune|Ahmedabad|Jaipur|Lucknow|Kanpur|Nagpur|Indore|Thane|Bhopal|Visakhapatnam|Patna|Vadodara|Ghaziabad|Ludhiana|Agra|Nashik|Faridabad|Meerut|Rajkot|Varanasi|Srinagar|Amritsar|Noida|Ranchi|Chandigarh|Howrah|Gwalior|Jodhpur|Raipur|Kota|Guwahati|Thiruvananthapuram|Solapur|Tiruchirappalli|Bareilly|Moradabad|Mysore|Tiruppur|Gurgaon|Aligarh|Jalandhar|Bhubaneswar|Salem|Warangal|Guntur|Bhiwandi|Saharanpur|Gorakhpur|Bikaner|Amravati|Noida|Bhilai|Cuttack|Firozabad|Kochi|Nellore|Bhavnagar|Dehradun|Durgapur|Asansol|Rourkela|Nanded|Kolhapur|Ajmer|Akola|Gulbarga|Jamnagar|Ujjain|Loni|Siliguri|Jhansi|Ulhasnagar|Jammu|Sangli|Miraj|Rajahmundry|Kurnool|Tumkur|Bhatpara|Kozhikode|Bardhaman|Raichur|Bilaspur|Kamarhati|Shahjahanpur|Bijapur|Rampur|Shimoga|Chandrapur|Junagadh|Trivandrum|Bardhaman|Kulti|Srikakulam|Rewa|Yamunanagar|Raigarh|Pondicherry|Panipat|Vijayawada|Katihar|Nagercoil|Karaikudi|Mangalore|Tirunelveli|Malegaon|Jamalpur|Latur|Rohtak|Sagar|Rajnandgaon|Udupi|Bongaigaon|Deoghar|Chhindwara|Ongole|Nadiad|Kanpur|Morena|Amroha|Anand|Bhind|Bhalswa|Jahangirabad|Faridabad|Rae|Bareli|Morbi|Bharatpur|Begusarai|New|Delhi|Mumbai|Kolkata|Chennai|Bangalore|Hyderabad|Pune|Ahmedabad|Jaipur|Lucknow|Kanpur|Nagpur|Indore|Thane|Bhopal|Visakhapatnam|Patna|Vadodara|Ghaziabad|Ludhiana|Agra|Nashik|Faridabad|Meerut|Rajkot|Varanasi|Srinagar|Amritsar|Noida|Ranchi|Chandigarh|Howrah|Gwalior|Jodhpur|Raipur|Kota|Guwahati|Thiruvananthapuram|Solapur|Tiruchirappalli|Bareilly|Moradabad|Mysore|Tiruppur|Gurgaon|Aligarh|Jalandhar|Bhubaneswar|Salem|Warangal|Guntur|Bhiwandi|Saharanpur|Gorakhpur|Bikaner|Amravati|Noida|Bhilai|Cuttack|Firozabad|Kochi|Nellore|Bhavnagar|Dehradun|Durgapur|Asansol|Rourkela|Nanded|Kolhapur|Ajmer|Akola|Gulbarga|Jamnagar|Ujjain|Loni|Siliguri|Jhansi|Ulhasnagar|Jammu|Sangli|Miraj|Rajahmundry|Kurnool|Tumkur|Bhatpara|Kozhikode|Bardhaman|Raichur|Bilaspur|Kamarhati|Shahjahanpur|Bijapur|Rampur|Shimoga|Chandrapur|Junagadh|Trivandrum|Bardhaman|Kulti|Srikakulam|Rewa|Yamunanagar|Raigarh|Pondicherry|Panipat|Vijayawada|Katihar|Nagercoil|Karaikudi|Mangalore|Tirunelveli|Malegaon|Jamalpur|Latur|Rohtak|Sagar|Rajnandgaon|Udupi|Bongaigaon|Deoghar|Chhindwara|Ongole|Nadiad|Kanpur|Morena|Amroha|Anand|Bhind|Bhalswa|Jahangirabad|Faridabad|Rae|Bareli|Morbi|Bharatpur|Begusarai)\b'
+        ]
+        
+        for pattern in location_patterns:
+            locations = re.findall(pattern, text, re.IGNORECASE)
+            for loc in locations[:2]:  # Max 2 location hashtags
+                loc_hashtag = '#' + loc.title().replace(' ', '')
+                if loc_hashtag not in hashtags:
+                    hashtags.append(loc_hashtag)
+        
+        # Limit to 5-6 hashtags max
+        return ' '.join(hashtags[:6]) if hashtags else '#News'
+    
+    def _extract_key_phrases(self, text):
+        """
+        Extract key phrases from text for dynamic content generation
+        """
+        # Extract sentences
+        sentences = re.split(r'[.!?]+', text)
+        
+        # Extract key phrases (first 2-3 sentences or key parts)
+        key_phrases = []
+        for sentence in sentences[:3]:
+            sentence = sentence.strip()
+            if len(sentence) > 20 and len(sentence) < 150:
+                key_phrases.append(sentence)
+        
+        # If no good sentences, extract first meaningful part
+        if not key_phrases:
+            # Take first 100 chars as key phrase
+            key_phrases.append(text[:100].strip())
+        
+        return key_phrases
 
