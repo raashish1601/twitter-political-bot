@@ -25,7 +25,7 @@ class TwitterPoster:
             access_token_secret=self.access_token_secret,
             wait_on_rate_limit=True
         )
-        
+    
         # Initialize API v1.1 for media uploads (required for images)
         auth = tweepy.OAuth1UserHandler(
             self.api_key,

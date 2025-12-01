@@ -111,18 +111,18 @@ class NewsTracker:
         Remove entries older than specified days (increased to 30 days for better duplicate prevention)
         """
         try:
-            cutoff_date = datetime.now().timestamp() - (days * 24 * 60 * 60)
-            
+        cutoff_date = datetime.now().timestamp() - (days * 24 * 60 * 60)
+        
             original_count = len(self.posted_news)
-            self.posted_news = [
-                item for item in self.posted_news
-                if datetime.fromisoformat(item['posted_at']).timestamp() > cutoff_date
-            ]
+        self.posted_news = [
+            item for item in self.posted_news
+            if datetime.fromisoformat(item['posted_at']).timestamp() > cutoff_date
+        ]
             
             removed = original_count - len(self.posted_news)
             if removed > 0:
                 print(f"🧹 Cleaned up {removed} old entries (older than {days} days)")
-                self._save_posted_news()
+        self._save_posted_news()
         except Exception as e:
             print(f"⚠️  Error during cleanup: {e}")
 
