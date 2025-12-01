@@ -669,7 +669,7 @@ CRITICAL: STRICT PRO-BJP/PRO-NDA/PRO-MODI BIAS. ALWAYS support BJP/Modi/NDA. ALW
         
         # Final length check
                 if len(tweet) > 280:
-                excess = len(tweet) - 280
+            excess = len(tweet) - 280
             statement = statement[:len(statement)-excess-3] + "..."
             tweet = f"{statement}\n\n{hashtags}"
         
