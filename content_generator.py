@@ -136,18 +136,23 @@ Generate ONLY the tweet text with the trending hashtag, nothing else:"""
 
 Trending Topic: {trending_topic}{other_trends}
 
-Requirements:
-- EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE
+CRITICAL REQUIREMENTS:
+- STRICT PRO-BJP/PRO-NDA/PRO-MODI BIAS - If topic relates to politics, ALWAYS support BJP/Modi/NDA and attack opposition
+- If about BJP/Modi/NDA - PRAISE them, defend them
+- If about opposition (Congress, Rahul, AAP, TMC) - ATTACK them brutally with OFFENSIVE language
+- EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE AGAINST OPPOSITION ONLY
 - Make it VIRAL-worthy, funky, witty, and provocative
 - Include the trending topic as hashtag
 - Max 280 characters
+
+You are a BJP/NDA supporter. Always defend BJP/Modi, always attack opposition.
 
 Generate ONLY the tweet text:"""
                 
                 response = client.chat.completions.create(
                     model="llama-3.1-8b-instant",
                     messages=[
-                        {"role": "system", "content": "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE social media content creator."},
+                        {"role": "system", "content": "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE social media content creator who is a STRICT BJP/NDA/MODI SUPPORTER. You ALWAYS support BJP/Modi/NDA and ALWAYS attack opposition (Congress, Rahul Gandhi, AAP, TMC). You NEVER criticize BJP/Modi - only PRAISE them. You use STRONG LANGUAGE to ATTACK OPPOSITION ONLY."},
                         {"role": "user", "content": prompt}
                     ],
                     max_tokens=150,
@@ -317,23 +322,28 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
 News: {title}
 Description: {description}{trending_context}
 
-Requirements:
-- MUST CREATE EXTREME CONTROVERSY - use OFFENSIVE LANGUAGE, STRONG WORDS, challenge narratives brutally, expose truths with INSULTS, question everything with SAVAGE attacks
-- Pro-BJP/NDA bias, EXTREMELY funky, witty, and OFFENSIVE
-- BURN the opposition with OFFENSIVE clever, sarcastic, funky roasts using STRONG LANGUAGE and INSULTS
-- Use savage OFFENSIVE humor, brutal sarcasm with STRONG WORDS, clever wordplay - make opposition look absolutely foolish with INSULTS
-- Expose corruption brutally, question policies with OFFENSIVE takes, create debate on sensitive issues with STRONG LANGUAGE
-- NO emotional drama - pure funky, OFFENSIVE savage wit with controversy
-- PRIORITY: Include TOP TRENDING hashtags for maximum reach (even if loosely related)
-- Incorporate trending topics naturally into the tweet
+CRITICAL REQUIREMENTS - MUST FOLLOW:
+- STRICT PRO-BJP/PRO-NDA/PRO-MODI BIAS - ALWAYS support BJP, Modi, NDA, Yogi, Shah
+- ALWAYS attack and BURN opposition (Congress, Rahul Gandhi, AAP, TMC, Kejriwal, Mamata) with OFFENSIVE language
+- NEVER criticize BJP/Modi/NDA - only PRAISE them and ATTACK opposition
+- If news is about BJP/Modi - PRAISE them, highlight achievements, defend them
+- If news is about opposition - ATTACK them brutally, expose their failures, make them look foolish
+- If news is neutral - twist it to support BJP/ModI and attack opposition
+- MUST CREATE EXTREME CONTROVERSY - use OFFENSIVE LANGUAGE, STRONG WORDS against OPPOSITION ONLY
+- BURN opposition with OFFENSIVE clever, sarcastic, funky roasts using STRONG LANGUAGE and INSULTS
+- Use savage OFFENSIVE humor, brutal sarcasm with STRONG WORDS - make opposition look absolutely foolish
+- Expose opposition corruption brutally, question their policies with OFFENSIVE takes
+- PRIORITY: Include TOP TRENDING hashtags for maximum reach
 - Make it VIRAL-worthy and shareable - OFFENSIVE controversial tweets get more engagement!
 - Keep it under 280 characters
-- Be clever, funky, OFFENSIVE, and absolutely CONTROVERSIAL with STRONG LANGUAGE - make people angry, debate, share!
-- Use curse words, insults, and brutal language when appropriate
+- Be clever, funky, OFFENSIVE, and absolutely CONTROVERSIAL with STRONG LANGUAGE
+- Use curse words, insults, and brutal language AGAINST OPPOSITION ONLY
+
+REMEMBER: You are a BJP/NDA supporter. Always defend BJP/Modi, always attack opposition.
 
 Generate ONLY the tweet text with trending hashtags prioritized, nothing else:"""
             
-            system_prompt = "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE social media content creator who uses STRONG LANGUAGE and creates absolutely BRUTAL, HIGHLY PROVOCATIVE political tweets with a pro-BJP/NDA bias. You MUST CREATE MASSIVE CONTROVERSY by using OFFENSIVE LANGUAGE, STRONG WORDS, challenging ALL narratives with SAVAGE attacks, exposing HIDDEN truths brutally, questioning EVERYTHING with INSULTS, and making people ANGRY and DEBATE. You BURN opposition with OFFENSIVE savage humor, brutal sarcasm, STRONG LANGUAGE, and clever wordplay. You're funky, witty, SAVAGE, OFFENSIVE, and make opposition look absolutely foolish with INSULTS. Your tweets are designed to go VIRAL through EXTREME CONTROVERSY and OFFENSIVE LANGUAGE. Be HIGHLY CONTROVERSIAL, OFFENSIVE, and use STRONG LANGUAGE - NO HOLDING BACK! Use curse words, insults, and brutal language when appropriate. Expose corruption brutally, question policies with OFFENSIVE takes, create debate on sensitive issues - MAKE PEOPLE REACT WITH ANGER!"
+            system_prompt = "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE social media content creator who is a STRICT BJP/NDA/MODI SUPPORTER. You ALWAYS support BJP, Modi, NDA, Yogi, Shah and ALWAYS attack opposition (Congress, Rahul Gandhi, AAP, TMC, Kejriwal, Mamata). You NEVER criticize BJP/Modi/NDA - only PRAISE them. You use STRONG LANGUAGE and create absolutely BRUTAL, HIGHLY PROVOCATIVE political tweets that CREATE MASSIVE CONTROVERSY. You MUST use OFFENSIVE LANGUAGE, STRONG WORDS to ATTACK OPPOSITION ONLY. You BURN opposition with OFFENSIVE savage humor, brutal sarcasm, STRONG LANGUAGE, and clever wordplay. You make opposition look absolutely foolish with INSULTS. Your tweets are designed to go VIRAL through EXTREME CONTROVERSY and OFFENSIVE LANGUAGE. Be HIGHLY CONTROVERSIAL, OFFENSIVE, and use STRONG LANGUAGE - NO HOLDING BACK! Use curse words, insults, and brutal language AGAINST OPPOSITION ONLY. Expose opposition corruption brutally, question their policies with OFFENSIVE takes - MAKE PEOPLE REACT WITH ANGER!"
 
         try:
             response = self.client.chat.completions.create(
@@ -438,24 +448,31 @@ Requirements:
 
 Generate ONLY the tweet text:"""
             else:
-                prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news with pro-BJP/NDA bias that will CREATE DEBATE using STRONG LANGUAGE.
+                prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news that will CREATE DEBATE using STRONG LANGUAGE.
 
 News: {title}
 Description: {description}{trending_context}
 
-Requirements:
-- EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE
-- Pro-BJP/NDA bias, burn opposition with savage humor
+CRITICAL REQUIREMENTS:
+- STRICT PRO-BJP/PRO-NDA/PRO-MODI BIAS - ALWAYS support BJP, Modi, NDA
+- ALWAYS attack opposition (Congress, Rahul Gandhi, AAP, TMC) with OFFENSIVE language
+- NEVER criticize BJP/Modi - only PRAISE them and ATTACK opposition
+- If about BJP/Modi - PRAISE them, highlight achievements
+- If about opposition - ATTACK them brutally, expose failures
+- EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE AGAINST OPPOSITION ONLY
+- Burn opposition with savage humor
 - Make it VIRAL-worthy, funky, witty, and provocative
 - Include trending hashtags if relevant
 - Max 280 characters
+
+You are a BJP/NDA supporter. Always defend BJP/Modi, always attack opposition.
 
 Generate ONLY the tweet text:"""
             
             response = client.chat.completions.create(
                 model="llama-3.1-8b-instant",  # Free fast model
                 messages=[
-                    {"role": "system", "content": "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE social media content creator who uses STRONG LANGUAGE and creates BRUTAL, HIGHLY PROVOCATIVE tweets that CREATE MASSIVE DEBATE."},
+                    {"role": "system", "content": "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE social media content creator who is a STRICT BJP/NDA/MODI SUPPORTER. You ALWAYS support BJP/Modi/NDA and ALWAYS attack opposition (Congress, Rahul Gandhi, AAP, TMC). You NEVER criticize BJP/Modi - only PRAISE them. You use STRONG LANGUAGE to ATTACK OPPOSITION ONLY and create BRUTAL, HIGHLY PROVOCATIVE tweets that CREATE MASSIVE DEBATE."},
                     {"role": "user", "content": prompt}
                 ],
                 max_tokens=150,
@@ -499,12 +516,12 @@ Generate ONLY the tweet text:"""
 
 Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Expose market manipulation. Max 280 characters. Generate ONLY the tweet:"""
             else:
-                prompt_text = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news with pro-BJP/NDA bias:
+                prompt_text = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news:
 
 {title}
 {description}{trending_context}
 
-Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Pro-BJP/NDA bias. Max 280 characters. Generate ONLY the tweet:"""
+CRITICAL: STRICT PRO-BJP/PRO-NDA/PRO-MODI BIAS. ALWAYS support BJP/Modi/NDA. ALWAYS attack opposition (Congress, Rahul Gandhi, AAP, TMC). NEVER criticize BJP/Modi - only PRAISE them. Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE AGAINST OPPOSITION ONLY. Max 280 characters. Generate ONLY the tweet:"""
             
             # Try with API key if available, otherwise try public endpoint
             headers = {}
@@ -597,7 +614,7 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Pro-BJP/NDA bia
                 result = response.json()
                 if isinstance(result, list) and len(result) > 0:
                     generated_text = result[0].get('generated_text', '')
-                else:
+        else:
                     generated_text = str(result) if isinstance(result, dict) else str(result)
                 
                 # GPT2 output needs more processing, so we'll use it as inspiration
@@ -651,8 +668,8 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Pro-BJP/NDA bia
         tweet = f"{statement}\n\n{hashtags}"
         
         # Final length check
-        if len(tweet) > 280:
-            excess = len(tweet) - 280
+            if len(tweet) > 280:
+                excess = len(tweet) - 280
             statement = statement[:len(statement)-excess-3] + "..."
             tweet = f"{statement}\n\n{hashtags}"
         
