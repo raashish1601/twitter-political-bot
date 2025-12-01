@@ -14,9 +14,13 @@ class TweetScheduler:
         
         # Optimal posting times (IST) with some randomization
         self.posting_times = [
-            (8, 30),  # 8:30 AM - Morning commute
-            (13, 30), # 1:30 PM - Lunch break
-            (20, 0)   # 8:00 PM - Evening peak
+            (7, 0),   # 7:00 AM - Early morning
+            (9, 0),   # 9:00 AM - Morning peak
+            (12, 0),  # 12:00 PM - Midday
+            (14, 0),  # 2:00 PM - Afternoon
+            (17, 0),  # 5:00 PM - Evening start
+            (19, 0),  # 7:00 PM - Prime time
+            (21, 0)   # 9:00 PM - Night peak
         ]
     
     def _get_randomized_time(self, hour, minute):
