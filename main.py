@@ -23,83 +23,38 @@ class TwitterAutomation:
         self.post_counter = 0  # Track post count for alternating
         self.ist = pytz.timezone('Asia/Kolkata')  # IST timezone
         
-    def _should_post_now(self, force_post=False):
+    def _get_post_type(self):
         """
-        Randomly decide if we should post now (to avoid looking automated)
-        Uses date-based seed for consistent randomness per day, but different each day
-        If force_post is True (manual trigger), always returns True
-        Returns: (should_post: bool, post_type: str) where post_type is 'politics', 'stock_market', or 'trending'
+        Randomly select post type (politics, stock_market, or trending)
+        Uses date + minute as seed for consistent randomness per day, but different each run
+        Returns: post_type: str where post_type is 'politics', 'stock_market', or 'trending'
         """
         # Get current time in IST
         current_time = datetime.now(self.ist)
-        current_hour = current_time.hour
-        
-        # Manual triggers should never skip
-        if force_post:
-            # Still determine type randomly but always post
-            rand = random.random()
-            if rand < 0.33:
-                return True, 'politics'
-            elif rand < 0.66:
-                return True, 'stock_market'
-            else:
-                return True, 'trending'
-        
         current_date = current_time.strftime('%Y-%m-%d')
+        current_minute = current_time.minute
         
-        # Use date + hour as seed for consistent randomness per day
-        seed_string = f"{current_date}_{current_hour}"
+        # Use date + minute as seed for consistent randomness per day, but varied per run
+        # This ensures we get roughly equal distribution (16 each) across 48 posts per day
+        seed_string = f"{current_date}_{current_minute}_{random.random()}"
         seed = int(hashlib.md5(seed_string.encode()).hexdigest(), 16) % (10**8)
         random.seed(seed)
         
-        # Define time windows for posting (spread throughout the day)
-        morning_window = (7, 11)    # 7 AM - 11 AM
-        afternoon_window = (12, 16)  # 12 PM - 4 PM
-        evening_window = (17, 22)    # 5 PM - 10 PM
-        
-        # Check if current hour is in any window
-        in_morning = morning_window[0] <= current_hour < morning_window[1]
-        in_afternoon = afternoon_window[0] <= current_hour < afternoon_window[1]
-        in_evening = evening_window[0] <= current_hour < evening_window[1]
-        
-        if not (in_morning or in_afternoon or in_evening):
-            return False, False  # Outside posting windows
-        
-        # Random probability based on window (higher during peak hours)
-        if in_morning:
-            post_probability = random.uniform(0.3, 0.5)  # 30-50% chance
-        elif in_afternoon:
-            post_probability = random.uniform(0.4, 0.6)  # 40-60% chance
-        else:  # evening
-            post_probability = random.uniform(0.35, 0.55)  # 35-55% chance
-        
-        # Decide if we should post
-        should_post = random.random() < post_probability
-        
-        if not should_post:
-            return False, False
-        
-        # Determine post type based on hour and random factor
-        # Distribution: 6 politics, 6 stock market, 6 trending per day (18 total)
-        # Equal distribution throughout the day
-        
-        # Use date + hour to create consistent but varied distribution
-        # This ensures we get roughly equal posts from each category
-        hour_seed = int(hashlib.md5(f"{current_date}_{current_hour}".encode()).hexdigest(), 16) % 3
-        
-        # Rotate between the three types based on hour seed
-        if hour_seed == 0:
-            return True, 'politics'
-        elif hour_seed == 1:
-            return True, 'stock_market'
+        # Equal probability for each type (33.33% each)
+        # Target: ~16 politics, ~16 stock market, ~16 trending per day (48 total)
+        rand = random.random()
+        if rand < 0.333:
+            return 'politics'
+        elif rand < 0.666:
+            return 'stock_market'
         else:
-            return True, 'trending'
+            return 'trending'
     
     def post_tweet(self, force_post=False):
         """
         Main function to fetch news, generate tweet, and post
-        Alternates between political and stock market news
-        force_post: If True, always posts (for manual triggers)
+        Always posts (skip logic removed for 48 tweets/day)
+        force_post: Kept for compatibility but no longer needed (always posts)
         """
         current_time = datetime.now(self.ist).strftime('%Y-%m-%d %H:%M:%S IST')
         trigger_type = "🔵 MANUAL TRIGGER" if force_post else "⏰ SCHEDULED RUN"
@@ -109,21 +64,8 @@ class TwitterAutomation:
         print(f"⏰ Time: {current_time}")
         print("="*50)
         
-        # Randomly decide if we should post now (to avoid looking automated)
-        # Manual triggers always post
-        should_post, post_type_enum = self._should_post_now(force_post=force_post)
-        # current_time already set above, reuse it
-        
-        if not should_post:
-            print("\n" + "="*50)
-            print(f"⏸️  SKIP DECISION")
-            print(f"⏰ Time: {current_time}")
-            print(f"📊 Decision: Not posting at this time")
-            print(f"💡 Reason: Randomized schedule (to avoid looking automated)")
-            print(f"✅ Status: Skipped successfully")
-            print(f"ℹ️  Note: Manual triggers always post (use 'Run workflow' button)")
-            print("="*50)
-            return
+        # Always post - randomly select post type
+        post_type_enum = self._get_post_type()
         
         # Map post type enum to display name
         post_type_map = {
@@ -132,7 +74,7 @@ class TwitterAutomation:
             'trending': '🔥 Trending Topics'
         }
         post_type = post_type_map.get(post_type_enum, '📝 General')
-        print(f"\n📌 Post type: {post_type} (random time)")
+        print(f"\n📌 Post type: {post_type} (random selection)")
         
         # STEP 1: Fetch trending topics FIRST (always needed)
         print("\n🔥 Fetching Twitter trends...")
