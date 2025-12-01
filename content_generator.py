@@ -4,6 +4,8 @@ Content Generator Module - Creates funky, witty tweets using OpenAI
 import os
 import re
 import random
+import requests
+import json
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -13,6 +15,8 @@ class ContentGenerator:
     def __init__(self):
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
         self.use_openai = bool(self.openai_api_key and self.openai_api_key.strip())
+        self.groq_api_key = os.getenv('GROQ_API_KEY')  # Optional free API
+        self.hf_api_key = os.getenv('HUGGINGFACE_API_KEY')  # Optional free API
         
         if self.use_openai:
             try:
@@ -21,7 +25,7 @@ class ContentGenerator:
                 print(f"⚠️  OpenAI initialization failed: {e}")
                 self.use_openai = False
         else:
-            print("⚠️  OpenAI API key not found, will use fallback tweet generator")
+            print("⚠️  OpenAI API key not found, will use free API fallbacks")
             self.use_openai = False
         
     def generate_trending_tweet(self, trending_topic, all_trending_topics=None):
@@ -35,8 +39,13 @@ class ContentGenerator:
             if other_trends_list:
                 other_trends = f"\n\nOther trending topics: {', '.join(other_trends_list[:3])}"
         
-        # Check if OpenAI is available
+        # Check if OpenAI is available, otherwise try free APIs
         if not self.use_openai:
+            # Try free API alternatives first
+            free_api_tweet = self._try_free_api_trending_generation(trending_topic, all_trending_topics)
+            if free_api_tweet:
+                return free_api_tweet
+            # If free APIs fail, use template-based fallback
             return self._create_fallback_trending_tweet(trending_topic, all_trending_topics)
         
         prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 characters) about this trending topic that will CREATE MASSIVE DEBATE and CONTROVERSY using STRONG LANGUAGE.
@@ -101,7 +110,124 @@ Generate ONLY the tweet text with the trending hashtag, nothing else:"""
             else:
                 print(f"⚠️  OpenAI API error: {error_msg[:100]}. Using fallback tweet generator.")
             
+            # Try free API alternatives before template fallback
+            free_api_tweet = self._try_free_api_trending_generation(trending_topic, all_trending_topics)
+            if free_api_tweet:
+                return free_api_tweet
             return self._create_fallback_trending_tweet(trending_topic, all_trending_topics)
+    
+    def _try_free_api_trending_generation(self, trending_topic, all_trending_topics=None):
+        """
+        Try to generate trending tweet using free APIs
+        """
+        other_trends = ""
+        if all_trending_topics:
+            other_trends_list = [t for t in all_trending_topics[:5] if t != trending_topic]
+            if other_trends_list:
+                other_trends = f"\n\nOther trending topics: {', '.join(other_trends_list[:3])}"
+        
+        # Try Groq API first
+        if self.groq_api_key:
+            try:
+                from groq import Groq
+                client = Groq(api_key=self.groq_api_key)
+                
+                prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this trending topic that will CREATE MASSIVE DEBATE using STRONG LANGUAGE.
+
+Trending Topic: {trending_topic}{other_trends}
+
+Requirements:
+- EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE
+- Make it VIRAL-worthy, funky, witty, and provocative
+- Include the trending topic as hashtag
+- Max 280 characters
+
+Generate ONLY the tweet text:"""
+                
+                response = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=[
+                        {"role": "system", "content": "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE social media content creator."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=150,
+                    temperature=1.0
+                )
+                
+                tweet = response.choices[0].message.content.strip()
+                
+                if tweet.startswith('"') and tweet.endswith('"'):
+                    tweet = tweet[1:-1]
+                if tweet.startswith("'") and tweet.endswith("'"):
+                    tweet = tweet[1:-1]
+                
+                # Ensure trending topic is included
+                trend_hashtag = trending_topic if trending_topic.startswith('#') else f"#{trending_topic.replace(' ', '')}"
+                if trend_hashtag.lower() not in tweet.lower():
+                    if len(tweet) + len(trend_hashtag) + 2 <= 280:
+                        tweet = f"{tweet} {trend_hashtag}"
+                
+                if len(tweet) > 280:
+                    tweet = tweet[:277] + "..."
+                
+                if len(tweet) > 20:
+                    print("✅ Generated trending tweet using Groq API (free)")
+                    return tweet
+            except ImportError:
+                pass
+            except Exception as e:
+                print(f"⚠️  Groq API failed for trending: {str(e)[:50]}")
+        
+        # Try Hugging Face
+        try:
+            model_name = "meta-llama/Llama-3.1-8B-Instruct"
+            prompt_text = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this trending topic:
+
+{trending_topic}{other_trends}
+
+Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Include hashtag. Max 280 characters. Generate ONLY the tweet:"""
+            
+            headers = {}
+            if self.hf_api_key:
+                headers["Authorization"] = f"Bearer {self.hf_api_key}"
+            
+            api_url = f"https://api-inference.huggingface.co/models/{model_name}"
+            payload = {
+                "inputs": prompt_text,
+                "parameters": {"max_new_tokens": 150, "temperature": 1.0, "return_full_text": False}
+            }
+            
+            response = requests.post(api_url, headers=headers, json=payload, timeout=30)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if isinstance(result, list) and len(result) > 0:
+                    generated_text = result[0].get('generated_text', '')
+                else:
+                    generated_text = str(result)
+                
+                tweet = generated_text.strip()
+                
+                if tweet.startswith('"') and tweet.endswith('"'):
+                    tweet = tweet[1:-1]
+                if tweet.startswith("'") and tweet.endswith("'"):
+                    tweet = tweet[1:-1]
+                
+                trend_hashtag = trending_topic if trending_topic.startswith('#') else f"#{trending_topic.replace(' ', '')}"
+                if trend_hashtag.lower() not in tweet.lower():
+                    if len(tweet) + len(trend_hashtag) + 2 <= 280:
+                        tweet = f"{tweet} {trend_hashtag}"
+                
+                if len(tweet) > 280:
+                    tweet = tweet[:277] + "..."
+                
+                if len(tweet) > 20:
+                    print("✅ Generated trending tweet using Hugging Face API (free)")
+                    return tweet
+        except Exception as e:
+            print(f"⚠️  Hugging Face API failed for trending: {str(e)[:50]}")
+        
+        return None
     
     def _create_fallback_trending_tweet(self, trending_topic, all_trending_topics=None):
         """
@@ -175,8 +301,13 @@ Generate ONLY the tweet text with the trending hashtag, nothing else:"""
             if relevant_trends:
                 trending_context = f"\n\nCurrent Twitter trends to consider: {', '.join(relevant_trends[:3])}"
         
-        # Check if OpenAI is available, otherwise use fallback directly
+        # Check if OpenAI is available, otherwise try free APIs
         if not self.use_openai:
+            # Try free API alternatives first
+            free_api_tweet = self._try_free_api_generation(news_article, trending_topics, is_stock_market)
+            if free_api_tweet:
+                return free_api_tweet
+            # If free APIs fail, use template-based fallback
             return self._create_fallback_tweet(news_article, trending_topics, is_stock_market)
         
         if is_stock_market:
@@ -263,7 +394,252 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
             else:
                 print(f"⚠️  OpenAI API error: {error_msg[:100]}. Using fallback tweet generator.")
             
+            # Try free API alternatives before template fallback
+            free_api_tweet = self._try_free_api_generation(news_article, trending_topics, is_stock_market)
+            if free_api_tweet:
+                return free_api_tweet
             return self._create_fallback_tweet(news_article, trending_topics, is_stock_market)
+    
+    def _try_free_api_generation(self, news_article, trending_topics=None, is_stock_market=False):
+        """
+        Try to generate tweet using free APIs (Groq or Hugging Face)
+        Returns generated tweet or None if all fail
+        """
+        title = news_article.get('title', '')
+        description = news_article.get('description', '') or title
+        
+        # Build trending context
+        trending_context = ""
+        if trending_topics:
+            relevant_trends = [t for t in trending_topics[:5] if not t.startswith('#')]
+            if relevant_trends:
+                trending_context = f"\n\nCurrent Twitter trends: {', '.join(relevant_trends[:3])}"
+        
+        # Try Groq API first (free tier, very fast)
+        if self.groq_api_key:
+            try:
+                tweet = self._generate_with_groq(title, description, trending_context, is_stock_market)
+                if tweet:
+                    print("✅ Generated tweet using Groq API (free)")
+                    return tweet
+            except Exception as e:
+                print(f"⚠️  Groq API failed: {str(e)[:50]}")
+        
+        # Try Hugging Face Inference API (free tier, some models don't need API key)
+        try:
+            tweet = self._generate_with_huggingface(title, description, trending_context, is_stock_market)
+            if tweet:
+                print("✅ Generated tweet using Hugging Face API (free)")
+                return tweet
+        except Exception as e:
+            print(f"⚠️  Hugging Face API failed: {str(e)[:50]}")
+        
+        return None
+    
+    def _generate_with_groq(self, title, description, trending_context, is_stock_market):
+        """
+        Generate tweet using Groq API (free tier, very fast)
+        """
+        try:
+            from groq import Groq
+            client = Groq(api_key=self.groq_api_key)
+            
+            if is_stock_market:
+                prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian stock market news that will CREATE DEBATE using STRONG LANGUAGE.
+
+News: {title}
+Description: {description}{trending_context}
+
+Requirements:
+- EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE
+- Expose market manipulation, question broker recommendations brutally
+- Make it VIRAL-worthy, funky, witty, and provocative
+- Include trending hashtags if relevant
+- Max 280 characters
+
+Generate ONLY the tweet text:"""
+            else:
+                prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news with pro-BJP/NDA bias that will CREATE DEBATE using STRONG LANGUAGE.
+
+News: {title}
+Description: {description}{trending_context}
+
+Requirements:
+- EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE
+- Pro-BJP/NDA bias, burn opposition with savage humor
+- Make it VIRAL-worthy, funky, witty, and provocative
+- Include trending hashtags if relevant
+- Max 280 characters
+
+Generate ONLY the tweet text:"""
+            
+            response = client.chat.completions.create(
+                model="llama-3.1-8b-instant",  # Free fast model
+                messages=[
+                    {"role": "system", "content": "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE social media content creator who uses STRONG LANGUAGE and creates BRUTAL, HIGHLY PROVOCATIVE tweets that CREATE MASSIVE DEBATE."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=150,
+                temperature=1.0
+            )
+            
+            tweet = response.choices[0].message.content.strip()
+            
+            # Clean up
+            if tweet.startswith('"') and tweet.endswith('"'):
+                tweet = tweet[1:-1]
+            if tweet.startswith("'") and tweet.endswith("'"):
+                tweet = tweet[1:-1]
+            
+            if len(tweet) > 280:
+                tweet = tweet[:277] + "..."
+            
+            return tweet if len(tweet) > 20 else None
+            
+        except ImportError:
+            # Groq library not installed, skip
+            return None
+        except Exception as e:
+            raise e
+    
+    def _generate_with_huggingface(self, title, description, trending_context, is_stock_market):
+        """
+        Generate tweet using Hugging Face Inference API (free tier)
+        Uses models that don't require API key or uses provided key
+        """
+        try:
+            # Try using a free model that doesn't require authentication
+            # Using meta-llama/Llama-3.1-8B-Instruct or similar free models
+            model_name = "meta-llama/Llama-3.1-8B-Instruct"
+            
+            if is_stock_market:
+                prompt_text = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian stock market news:
+
+{title}
+{description}{trending_context}
+
+Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Expose market manipulation. Max 280 characters. Generate ONLY the tweet:"""
+            else:
+                prompt_text = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news with pro-BJP/NDA bias:
+
+{title}
+{description}{trending_context}
+
+Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Pro-BJP/NDA bias. Max 280 characters. Generate ONLY the tweet:"""
+            
+            # Try with API key if available, otherwise try public endpoint
+            headers = {}
+            if self.hf_api_key:
+                headers["Authorization"] = f"Bearer {self.hf_api_key}"
+            
+            # Use Hugging Face Inference API
+            api_url = f"https://api-inference.huggingface.co/models/{model_name}"
+            
+            payload = {
+                "inputs": prompt_text,
+                "parameters": {
+                    "max_new_tokens": 150,
+                    "temperature": 1.0,
+                    "return_full_text": False
+                }
+            }
+            
+            response = requests.post(api_url, headers=headers, json=payload, timeout=30)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Extract generated text
+                if isinstance(result, list) and len(result) > 0:
+                    generated_text = result[0].get('generated_text', '')
+                elif isinstance(result, dict):
+                    generated_text = result.get('generated_text', '')
+                else:
+                    generated_text = str(result)
+                
+                # Clean up the generated text
+                tweet = generated_text.strip()
+                
+                # Extract just the tweet part (remove prompt if included)
+                if title in tweet:
+                    # Try to extract just the tweet part after the title
+                    parts = tweet.split('\n')
+                    for part in parts:
+                        if len(part) > 20 and len(part) < 300:
+                            tweet = part.strip()
+                            break
+                
+                # Clean up quotes
+                if tweet.startswith('"') and tweet.endswith('"'):
+                    tweet = tweet[1:-1]
+                if tweet.startswith("'") and tweet.endswith("'"):
+                    tweet = tweet[1:-1]
+                
+                # Ensure length
+                if len(tweet) > 280:
+                    tweet = tweet[:277] + "..."
+                
+                return tweet if len(tweet) > 20 else None
+            else:
+                # If model is loading, try alternative free model
+                if response.status_code == 503:
+                    # Try alternative: microsoft/DialoGPT-medium or gpt2
+                    return self._try_hf_alternative_model(title, description, trending_context, is_stock_market)
+                return None
+                
+        except Exception as e:
+            # If Hugging Face fails, return None to try next method
+            return None
+    
+    def _try_hf_alternative_model(self, title, description, trending_context, is_stock_market):
+        """
+        Try alternative free Hugging Face models if primary fails
+        """
+        try:
+            # Use a simpler, always-available model
+            model_name = "gpt2"  # Always available, no auth needed
+            
+            prompt_text = f"Create a controversial Twitter post about: {title}. {description[:100]}. Max 280 chars."
+            
+            api_url = f"https://api-inference.huggingface.co/models/{model_name}"
+            
+            payload = {
+                "inputs": prompt_text,
+                "parameters": {
+                    "max_new_tokens": 100,
+                    "temperature": 1.0,
+                    "return_full_text": False
+                }
+            }
+            
+            response = requests.post(api_url, json=payload, timeout=20)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if isinstance(result, list) and len(result) > 0:
+                    generated_text = result[0].get('generated_text', '')
+                else:
+                    generated_text = str(result)
+                
+                # GPT2 output needs more processing, so we'll use it as inspiration
+                # Extract meaningful parts and create tweet
+                words = generated_text.split()[:30]  # Take first 30 words
+                tweet = ' '.join(words)
+                
+                # Add controversial intro
+                intros = ["🚨 ", "🔥 ", "💀 ", "⚡ "]
+                intro = random.choice(intros)
+                tweet = f"{intro}{tweet}"
+                
+                if len(tweet) > 280:
+                    tweet = tweet[:277] + "..."
+                
+                return tweet if len(tweet) > 20 else None
+                
+        except Exception:
+            pass
+        
+        return None
     
     def _create_fallback_tweet(self, news_article, trending_topics=None, is_stock_market=False):
         """
