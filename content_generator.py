@@ -533,7 +533,7 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Pro-BJP/NDA bia
                     generated_text = result[0].get('generated_text', '')
                 elif isinstance(result, dict):
                     generated_text = result.get('generated_text', '')
-                        else:
+                else:
                     generated_text = str(result)
                 
                 # Clean up the generated text
