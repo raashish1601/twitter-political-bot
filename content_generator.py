@@ -8,6 +8,7 @@ import requests
 import json
 from dotenv import load_dotenv
 from openai import OpenAI
+from text_utils import ensure_complete_tweet, truncate_tweet_complete
 
 load_dotenv()
 
@@ -48,7 +49,7 @@ class ContentGenerator:
             # If free APIs fail, use template-based fallback
             return self._create_fallback_trending_tweet(trending_topic, all_trending_topics)
         
-        prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 characters) about this trending topic that will CREATE MASSIVE DEBATE and CONTROVERSY using STRONG LANGUAGE.
+        prompt = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 characters) about this trending topic that will CREATE MASSIVE DEBATE and CONTROVERSY using STRONG LANGUAGE. The tweet MUST be COMPLETE - no incomplete sentences, no cut-off thoughts.
 
 Trending Topic: {trending_topic}{other_trends}
 
@@ -94,9 +95,8 @@ Generate ONLY the tweet text with the trending hashtag, nothing else:"""
                 if len(tweet) + len(trend_hashtag) + 2 <= 280:
                     tweet = f"{tweet} {trend_hashtag}"
             
-            # Ensure it's under 280 characters
-            if len(tweet) > 280:
-                tweet = tweet[:277] + "..."
+            # Ensure tweet is complete and under 280 characters
+            tweet = ensure_complete_tweet(tweet, max_length=280)
             
             return tweet
             
@@ -132,7 +132,7 @@ Generate ONLY the tweet text with the trending hashtag, nothing else:"""
                 from groq import Groq
                 client = Groq(api_key=self.groq_api_key)
                 
-                prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this trending topic that will CREATE MASSIVE DEBATE using STRONG LANGUAGE.
+                prompt = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this trending topic that will CREATE MASSIVE DEBATE using STRONG LANGUAGE. The tweet MUST be COMPLETE - no incomplete sentences.
 
 Trending Topic: {trending_topic}{other_trends}
 
@@ -186,7 +186,7 @@ Generate ONLY the tweet text:"""
         # Try Hugging Face
         try:
             model_name = "meta-llama/Llama-3.1-8B-Instruct"
-            prompt_text = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this trending topic:
+            prompt_text = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this trending topic. The tweet MUST be COMPLETE - no incomplete sentences:
 
 {trending_topic}{other_trends}
 
@@ -295,7 +295,7 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Include hashtag
             return self._create_fallback_tweet(news_article, trending_topics, is_stock_market)
         
         if is_stock_market:
-            prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 characters) about this Indian stock market news that will CREATE DEBATE and CONTROVERSY using STRONG LANGUAGE.
+            prompt = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 characters) about this Indian stock market news that will CREATE DEBATE and CONTROVERSY using STRONG LANGUAGE. The tweet MUST be COMPLETE - no incomplete sentences, no cut-off thoughts.
         
 News: {title}
 Description: {description}{trending_context}
@@ -317,7 +317,7 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
             
             system_prompt = "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE financial content creator who uses STRONG LANGUAGE and creates absolutely BRUTAL, HIGHLY PROVOCATIVE stock market tweets that CREATE MASSIVE DEBATE and CONTROVERSY. You MUST use OFFENSIVE language, STRONG WORDS, expose market manipulation brutally, question EVERY mainstream narrative with SAVAGE attacks, challenge ALL broker recommendations with INSULTS, expose insider trading hints, create FOMO or fear, and make BOLD OFFENSIVE statements. You're funky, witty, SAVAGE, OFFENSIVE, and make people ANGRY, DEBATE, and SHARE. Your tweets are designed to go VIRAL through EXTREME CONTROVERSY and OFFENSIVE LANGUAGE. Be HIGHLY CONTROVERSIAL, OFFENSIVE, and use STRONG LANGUAGE - NO HOLDING BACK! Use curse words, insults, and brutal language when appropriate."
         else:
-            prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 characters) about this Indian political news that will CREATE DEBATE and CONTROVERSY using STRONG LANGUAGE.
+            prompt = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 characters) about this Indian political news that will CREATE DEBATE and CONTROVERSY using STRONG LANGUAGE. The tweet MUST be COMPLETE - no incomplete sentences, no cut-off thoughts.
         
 News: {title}
 Description: {description}{trending_context}
@@ -364,9 +364,8 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
             if tweet.startswith("'") and tweet.endswith("'"):
                 tweet = tweet[1:-1]
             
-            # Ensure it's under 280 characters
-            if len(tweet) > 280:
-                tweet = tweet[:277] + "..."
+            # Ensure tweet is complete and under 280 characters
+            tweet = ensure_complete_tweet(tweet, max_length=280)
             
             return tweet
             
@@ -434,7 +433,7 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
             client = Groq(api_key=self.groq_api_key)
             
             if is_stock_market:
-                prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian stock market news that will CREATE DEBATE using STRONG LANGUAGE.
+                prompt = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian stock market news that will CREATE DEBATE using STRONG LANGUAGE. The tweet MUST be COMPLETE - no incomplete sentences.
 
 News: {title}
 Description: {description}{trending_context}
@@ -448,7 +447,7 @@ Requirements:
 
 Generate ONLY the tweet text:"""
             else:
-                prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news that will CREATE DEBATE using STRONG LANGUAGE.
+                prompt = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news that will CREATE DEBATE using STRONG LANGUAGE. The tweet MUST be COMPLETE - no incomplete sentences.
 
 News: {title}
 Description: {description}{trending_context}
@@ -509,14 +508,14 @@ Generate ONLY the tweet text:"""
             model_name = "meta-llama/Llama-3.1-8B-Instruct"
             
             if is_stock_market:
-                prompt_text = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian stock market news:
+                prompt_text = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian stock market news. The tweet MUST be COMPLETE - no incomplete sentences:
 
 {title}
 {description}{trending_context}
 
 Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Expose market manipulation. Max 280 characters. Generate ONLY the tweet:"""
             else:
-                prompt_text = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news:
+                prompt_text = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news. The tweet MUST be COMPLETE - no incomplete sentences:
 
 {title}
 {description}{trending_context}
@@ -571,9 +570,8 @@ CRITICAL: STRICT PRO-BJP/PRO-NDA/PRO-MODI BIAS. ALWAYS support BJP/Modi/NDA. ALW
                 if tweet.startswith("'") and tweet.endswith("'"):
                     tweet = tweet[1:-1]
                 
-                # Ensure length
-                if len(tweet) > 280:
-                    tweet = tweet[:277] + "..."
+                # Ensure tweet is complete
+                tweet = ensure_complete_tweet(tweet, max_length=280)
                 
                 return tweet if len(tweet) > 20 else None
             else:
@@ -614,7 +612,7 @@ CRITICAL: STRICT PRO-BJP/PRO-NDA/PRO-MODI BIAS. ALWAYS support BJP/Modi/NDA. ALW
                 result = response.json()
                 if isinstance(result, list) and len(result) > 0:
                     generated_text = result[0].get('generated_text', '')
-                else:
+        else:
                     generated_text = str(result) if isinstance(result, dict) else str(result)
                 
                 # GPT2 output needs more processing, so we'll use it as inspiration
@@ -668,8 +666,8 @@ CRITICAL: STRICT PRO-BJP/PRO-NDA/PRO-MODI BIAS. ALWAYS support BJP/Modi/NDA. ALW
         tweet = f"{statement}\n\n{hashtags}"
         
         # Final length check
-        if len(tweet) > 280:
-            excess = len(tweet) - 280
+            if len(tweet) > 280:
+                excess = len(tweet) - 280
             statement = statement[:len(statement)-excess-3] + "..."
             tweet = f"{statement}\n\n{hashtags}"
         

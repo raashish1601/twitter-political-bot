@@ -98,9 +98,9 @@ class TwitterPoster:
                 if temp_image_path:
                     media_id = self._upload_media(temp_image_path)
             
-            # Ensure tweet is within character limit
-            if len(tweet_text) > 280:
-                tweet_text = tweet_text[:277] + "..."
+            # Ensure tweet is complete and within character limit
+            from text_utils import ensure_complete_tweet
+            tweet_text = ensure_complete_tweet(tweet_text, max_length=280)
             
             # Post the tweet with or without media
             if media_id:

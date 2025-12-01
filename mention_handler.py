@@ -328,9 +328,10 @@ class MentionHandler:
             if available_space < 50:  # Too little space, don't add mentions
                 return tweet_text
             
-            # Trim tweet and add mentions
-            trimmed_tweet = tweet_text[:available_space].rsplit(' ', 1)[0]  # Cut at word boundary
-            return trimmed_tweet + "..." + mentions_text
+            # Trim tweet at sentence boundary to ensure completeness
+            from text_utils import truncate_tweet_complete
+            trimmed_tweet = truncate_tweet_complete(tweet_text, available_space)
+            return trimmed_tweet + mentions_text
     
     def get_controversy_mentions(self, topic_type: str = 'politics') -> List[str]:
         """
