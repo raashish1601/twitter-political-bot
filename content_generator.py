@@ -303,6 +303,7 @@ News: {title}
 Description: {description}{trending_context}
 
 Requirements:
+- COVER DIVERSE STOCK MARKET TOPICS: Don't just focus on Nifty/Sensex - cover IPOs, companies, sectors (banking, IT, pharma, auto, FMCG), startups, economy, investments, trading, etc.
 - MUST CREATE EXTREME CONTROVERSY - use OFFENSIVE LANGUAGE, STRONG WORDS, challenge popular opinions brutally, expose hidden truths with INSULTS, question mainstream narratives with SAVAGE attacks
 - EXTREMELY funky, witty, OFFENSIVE, and provocative - make people think, debate, and get ANGRY
 - Use bold OFFENSIVE statements, contrarian takes with STRONG LANGUAGE, expose market manipulation or insider trading hints brutally
@@ -314,6 +315,7 @@ Requirements:
 - Keep it under 280 characters
 - Be clever, funky, OFFENSIVE, and absolutely CONTROVERSIAL with STRONG LANGUAGE - make people angry, debate, share!
 - Use curse words, insults, and brutal language when appropriate
+- DIVERSITY: Cover various stock market aspects - IPOs, companies, sectors, economy, investments, not just indices
 
 Generate ONLY the tweet text with trending hashtags prioritized, nothing else:"""
             
@@ -325,12 +327,13 @@ News: {title}
 Description: {description}{trending_context}
 
 CRITICAL REQUIREMENTS - MUST FOLLOW:
+- COVER DIVERSE POLITICAL TOPICS: Don't just focus on Modi/Rahul - cover government policies, state politics, elections, infrastructure, economy, defense, social issues, regional parties, state leaders, cabinet decisions, parliament, etc.
 - STRICT PRO-BJP/PRO-NDA/PRO-MODI BIAS - ALWAYS support BJP, Modi, NDA, Yogi, Shah
 - ALWAYS attack and BURN opposition (Congress, Rahul Gandhi, AAP, TMC, Kejriwal, Mamata) with OFFENSIVE language
 - NEVER criticize BJP/Modi/NDA - only PRAISE them and ATTACK opposition
 - If news is about BJP/Modi - PRAISE them, highlight achievements, defend them
 - If news is about opposition - ATTACK them brutally, expose their failures, make them look foolish
-- If news is neutral - twist it to support BJP/ModI and attack opposition
+- If news is about other topics (states, policies, infrastructure, economy, defense, social issues) - frame it to support BJP/Modi/NDA achievements and attack opposition failures
 - MUST CREATE EXTREME CONTROVERSY - use OFFENSIVE LANGUAGE, STRONG WORDS against OPPOSITION ONLY
 - BURN opposition with OFFENSIVE clever, sarcastic, funky roasts using STRONG LANGUAGE and INSULTS
 - Use savage OFFENSIVE humor, brutal sarcasm with STRONG WORDS - make opposition look absolutely foolish
@@ -340,8 +343,9 @@ CRITICAL REQUIREMENTS - MUST FOLLOW:
 - Keep it under 280 characters
 - Be clever, funky, OFFENSIVE, and absolutely CONTROVERSIAL with STRONG LANGUAGE
 - Use curse words, insults, and brutal language AGAINST OPPOSITION ONLY
+- DIVERSITY: Cover various political aspects - state politics, policies, infrastructure, economy, defense, social issues, regional leaders, not just Modi/Rahul
 
-REMEMBER: You are a BJP/NDA supporter. Always defend BJP/Modi, always attack opposition.
+REMEMBER: You are a BJP/NDA supporter. Always defend BJP/Modi, always attack opposition. But cover DIVERSE topics beyond just Modi/Rahul.
 
 Generate ONLY the tweet text with trending hashtags prioritized, nothing else:"""
             
