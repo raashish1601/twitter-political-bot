@@ -28,22 +28,19 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements.txt
     
-    - name: Initialize posted_news.json if missing
+    - name: Initialize posted_news.json
       run: |
-        if [ ! -f posted_news.json ]; then
-          echo "[]" > posted_news.json
-          echo "✅ Created empty posted_news.json file"
-        else
-          echo "✅ posted_news.json already exists"
-        fi
+        # Initialize empty file first (in case download fails)
+        echo "[]" > posted_news.json
+        echo "✅ Initialized posted_news.json"
     
-    - name: Download posted_news.json (if exists)
+    - name: Download previous posted_news.json (if exists)
       uses: actions/download-artifact@v4
       with:
         name: posted-news
         path: .
       continue-on-error: true
-      if: always()
+      # This will fail on first run - that's expected and harmless
     
     - name: Create .env file
       run: |
