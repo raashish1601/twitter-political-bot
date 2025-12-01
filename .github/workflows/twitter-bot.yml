@@ -63,7 +63,16 @@ jobs:
         fi
     
     - name: Run Twitter Bot
-      run: python main.py --test
+      env:
+        FORCE_POST: ${{ github.event_name == 'workflow_dispatch' }}
+      run: |
+        if [ "$FORCE_POST" == "true" ]; then
+          echo "🔵 Manual trigger detected - will always post"
+          python main.py --test --force
+        else
+          echo "⏰ Scheduled run - may skip based on random logic"
+          python main.py --test
+        fi
     
     - name: Upload posted_news.json
       uses: actions/upload-artifact@v4

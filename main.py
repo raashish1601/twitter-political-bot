@@ -105,6 +105,7 @@ class TwitterAutomation:
             print(f"📊 Decision: Not posting at this time")
             print(f"💡 Reason: Randomized schedule (to avoid looking automated)")
             print(f"✅ Status: Skipped successfully")
+            print(f"ℹ️  Note: Manual triggers always post (use 'Run workflow' button)")
             print("="*50)
             return
         
@@ -298,37 +299,44 @@ class TwitterAutomation:
             print("\n\n⏹️  Scheduler stopped by user.")
             sys.exit(0)
     
-    def run_once(self):
+    def run_once(self, force_post=False):
         """
         Run once (for testing or manual execution)
+        force_post: If True, always posts (for manual triggers)
         """
         print("\n" + "="*50)
-        print("🧪 Running once (test mode)...")
+        if force_post:
+            print("🔵 Running once (MANUAL TRIGGER - will always post)...")
+        else:
+            print("🧪 Running once (test mode)...")
         print("="*50)
         
         if not self.test_connection():
             print("\n❌ Connection test failed. Please check your credentials.")
             return
         
-        self.post_tweet()
+        self.post_tweet(force_post=force_post)
 
 def main():
     automation = TwitterAutomation()
     
     # Check command line arguments
+    force_post = '--force' in sys.argv
+    
     if len(sys.argv) > 1 and sys.argv[1] == '--test':
-        # Test mode - run once
-        automation.run_once()
+        # Test mode - run once (with optional force flag)
+        automation.run_once(force_post=force_post)
     elif len(sys.argv) > 1 and sys.argv[1] == '--scheduled':
         # Scheduled mode - run continuously
         automation.run_scheduled()
     else:
         # Default: run once
         print("Usage:")
-        print("  python main.py --test      # Run once (test mode)")
-        print("  python main.py --scheduled # Run with scheduler (production)")
+        print("  python main.py --test           # Run once (test mode)")
+        print("  python main.py --test --force   # Run once, always post (manual trigger)")
+        print("  python main.py --scheduled      # Run with scheduler (production)")
         print("\nRunning in test mode...\n")
-        automation.run_once()
+        automation.run_once(force_post=force_post)
 
 if __name__ == "__main__":
     main()
