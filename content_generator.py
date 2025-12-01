@@ -651,8 +651,8 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Pro-BJP/NDA bia
         tweet = f"{statement}\n\n{hashtags}"
         
         # Final length check
-            if len(tweet) > 280:
-                excess = len(tweet) - 280
+        if len(tweet) > 280:
+            excess = len(tweet) - 280
             statement = statement[:len(statement)-excess-3] + "..."
             tweet = f"{statement}\n\n{hashtags}"
         
