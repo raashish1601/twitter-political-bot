@@ -313,21 +313,72 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
             else:
                     funky_intro = "🚨 Latest from Indian politics (the truth they hide): 💪\n\n"
         
-        # Calculate available space
-        available = 280 - len(funky_intro) - len(hashtags) - 5
+        # Ensure hashtags are not empty - add at least one if missing
+        if not hashtags or len(hashtags.strip()) == 0:
+            if is_stock_market:
+                hashtags = "#StockMarket #India"
+            else:
+                hashtags = "#India #Politics"
         
+        # Calculate available space (reserve space for intro, text, newlines, and hashtags)
+        # Reserve at least 20 chars for hashtags, but use actual length if longer
+        hashtag_reserve = max(20, len(hashtags))
+        available = 280 - len(funky_intro) - hashtag_reserve - 2  # -2 for newlines
+        
+        # Truncate text if needed
         if len(text) > available:
-            text = text[:available-3] + "..."
+            text = text[:max(available-3, 50)] + "..."  # Ensure at least 50 chars
         
+        # Construct tweet
         tweet = f"{funky_intro}{text}\n\n{hashtags}"
         
-        # Ensure it's under 280
+        # Final check: ensure tweet is under 280 characters
         if len(tweet) > 280:
-            # Trim hashtags if needed
+            # Calculate how much we need to trim
+            excess = len(tweet) - 280
+            
+            # First, try trimming text more
+            if len(text) > 50:
+                text = text[:max(len(text) - excess - 3, 50)] + "..."
+                tweet = f"{funky_intro}{text}\n\n{hashtags}"
+            
+            # If still too long, trim hashtags (but keep at least one)
             if len(tweet) > 280:
                 excess = len(tweet) - 280
-                hashtags = hashtags[:-excess-3] + "..."
-                tweet = f"{funky_intro}{text}\n\n{hashtags}"
+                hashtag_str = hashtags.strip()
+                # Remove hashtags from the end, but keep at least one
+                hashtag_list = hashtag_str.split()
+                while len(hashtag_list) > 1 and len(tweet) > 280:
+                    hashtag_list.pop()
+                    hashtags = ' '.join(hashtag_list)
+                    tweet = f"{funky_intro}{text}\n\n{hashtags}"
+                    if len(tweet) <= 280:
+                        break
+                
+                # If still too long, truncate the last hashtag
+                if len(tweet) > 280:
+                    excess = len(tweet) - 280
+                    if hashtag_list:
+                        last_hashtag = hashtag_list[-1]
+                        if len(last_hashtag) > excess + 3:
+                            hashtag_list[-1] = last_hashtag[:-(excess + 3)] + "..."
+                        else:
+                            hashtag_list.pop()
+                        hashtags = ' '.join(hashtag_list) if hashtag_list else "#India"
+                        tweet = f"{funky_intro}{text}\n\n{hashtags}"
+        
+        # Final validation - ensure tweet is complete and under limit
+        if len(tweet) > 280:
+            # Emergency truncation - keep intro and some text, minimal hashtags
+            max_text_len = 280 - len(funky_intro) - 15  # Reserve 15 for hashtags
+            text = text[:max(max_text_len - 3, 30)] + "..."
+            hashtags = "#India"  # Minimal hashtag
+            tweet = f"{funky_intro}{text}\n\n{hashtags}"
+        
+        # Ensure tweet ends properly
+        if not tweet.strip().endswith(hashtags.split()[-1] if hashtags else ""):
+            # Reconstruct to ensure hashtags are at the end
+            tweet = f"{funky_intro}{text}\n\n{hashtags}"
         
         return tweet
     
