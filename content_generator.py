@@ -6,6 +6,7 @@ import re
 import random
 import requests
 import json
+from datetime import datetime
 from dotenv import load_dotenv
 from openai import OpenAI
 from text_utils import ensure_complete_tweet, truncate_tweet_complete
@@ -188,7 +189,9 @@ Generate ONLY the tweet text:"""
         # Try Hugging Face
         try:
             model_name = "meta-llama/Llama-3.1-8B-Instruct"
-            prompt_text = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this trending topic. The tweet MUST be COMPLETE - no incomplete sentences:
+            prompt_text = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this trending topic. The tweet MUST be COMPLETE - no incomplete sentences.
+
+IMPORTANT: Current date is {current_year}-{current_month:02d}. DO NOT reference past dates or future dates that have already passed. Use current year {current_year} or general references.
 
 {trending_topic}{other_trends}
 
@@ -298,6 +301,8 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Include hashtag
         
         if is_stock_market:
             prompt = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 characters) about this Indian stock market news that will CREATE DEBATE and CONTROVERSY using STRONG LANGUAGE. The tweet MUST be COMPLETE - no incomplete sentences, no cut-off thoughts.
+
+IMPORTANT: Current date is {current_year}-{current_month:02d}. DO NOT reference past dates or future dates that have already passed. Use current year {current_year} or general references like "now", "today", "this year", etc.
         
 News: {title}
 Description: {description}{trending_context}
@@ -322,7 +327,9 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
             system_prompt = "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE financial content creator who uses STRONG LANGUAGE and creates absolutely BRUTAL, HIGHLY PROVOCATIVE stock market tweets that CREATE MASSIVE DEBATE and CONTROVERSY. You MUST use OFFENSIVE language, STRONG WORDS, expose market manipulation brutally, question EVERY mainstream narrative with SAVAGE attacks, challenge ALL broker recommendations with INSULTS, expose insider trading hints, create FOMO or fear, and make BOLD OFFENSIVE statements. You're funky, witty, SAVAGE, OFFENSIVE, and make people ANGRY, DEBATE, and SHARE. Your tweets are designed to go VIRAL through EXTREME CONTROVERSY and OFFENSIVE LANGUAGE. Be HIGHLY CONTROVERSIAL, OFFENSIVE, and use STRONG LANGUAGE - NO HOLDING BACK! Use curse words, insults, and brutal language when appropriate."
         else:
             prompt = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 characters) about this Indian political news that will CREATE DEBATE and CONTROVERSY using STRONG LANGUAGE. The tweet MUST be COMPLETE - no incomplete sentences, no cut-off thoughts.
-        
+
+IMPORTANT: Current date is {current_year}-{current_month:02d}. DO NOT reference past dates or future dates that have already passed. Use current year {current_year} or general references like "now", "today", "this year", etc.
+
 News: {title}
 Description: {description}{trending_context}
 
@@ -441,6 +448,8 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
             if is_stock_market:
                 prompt = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian stock market news that will CREATE DEBATE using STRONG LANGUAGE. The tweet MUST be COMPLETE - no incomplete sentences.
 
+IMPORTANT: Current date is {current_year}-{current_month:02d}. DO NOT reference past dates or future dates that have already passed. Use current year {current_year} or general references.
+
 News: {title}
 Description: {description}{trending_context}
 
@@ -514,7 +523,9 @@ Generate ONLY the tweet text:"""
             model_name = "meta-llama/Llama-3.1-8B-Instruct"
             
             if is_stock_market:
-                prompt_text = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian stock market news. The tweet MUST be COMPLETE - no incomplete sentences:
+                prompt_text = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian stock market news. The tweet MUST be COMPLETE - no incomplete sentences.
+
+IMPORTANT: Current date is {current_year}-{current_month:02d}. DO NOT reference past dates or future dates that have already passed. Use current year {current_year} or general references.
 
 {title}
 {description}{trending_context}
@@ -618,7 +629,7 @@ CRITICAL: STRICT PRO-BJP/PRO-NDA/PRO-MODI BIAS. ALWAYS support BJP/Modi/NDA. ALW
                 result = response.json()
                 if isinstance(result, list) and len(result) > 0:
                     generated_text = result[0].get('generated_text', '')
-                else:
+        else:
                     generated_text = str(result) if isinstance(result, dict) else str(result)
                 
                 # GPT2 output needs more processing, so we'll use it as inspiration
@@ -672,8 +683,8 @@ CRITICAL: STRICT PRO-BJP/PRO-NDA/PRO-MODI BIAS. ALWAYS support BJP/Modi/NDA. ALW
         tweet = f"{statement}\n\n{hashtags}"
         
         # Final length check
-        if len(tweet) > 280:
-            excess = len(tweet) - 280
+            if len(tweet) > 280:
+                excess = len(tweet) - 280
             statement = statement[:len(statement)-excess-3] + "..."
             tweet = f"{statement}\n\n{hashtags}"
         
