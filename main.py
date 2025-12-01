@@ -28,7 +28,7 @@ class TwitterAutomation:
         Randomly decide if we should post now (to avoid looking automated)
         Uses date-based seed for consistent randomness per day, but different each day
         If force_post is True (manual trigger), always returns True
-        Returns: (should_post: bool, is_stock_market: bool)
+        Returns: (should_post: bool, post_type: str) where post_type is 'politics', 'stock_market', or 'trending'
         """
         # Get current time in IST
         current_time = datetime.now(self.ist)
@@ -37,11 +37,13 @@ class TwitterAutomation:
         # Manual triggers should never skip
         if force_post:
             # Still determine type randomly but always post
-            stock_market_preferred = (
-                (9 <= current_hour < 11) or (14 <= current_hour < 16) or (17 <= current_hour < 19)
-            )
-            is_stock_market = random.random() < 0.65 if stock_market_preferred else random.random() < 0.35
-            return True, is_stock_market
+            rand = random.random()
+            if rand < 0.33:
+                return True, 'politics'
+            elif rand < 0.66:
+                return True, 'stock_market'
+            else:
+                return True, 'trending'
         
         current_date = current_time.strftime('%Y-%m-%d')
         
@@ -78,21 +80,50 @@ class TwitterAutomation:
             return False, False
         
         # Determine post type based on hour and random factor
+        # Distribution: ~6 politics, ~6 stock market, ~3-4 trending per day
         # Stock market: prefer 9-11 AM, 2-4 PM, 5-7 PM
         # Politics: prefer 7-9 AM, 12-2 PM, 6-10 PM
+        # Trending: spread throughout the day (3-4 posts)
+        
         stock_market_preferred = (
             (9 <= current_hour < 11) or  # Morning trading
             (14 <= current_hour < 16) or  # Afternoon trading
             (17 <= current_hour < 19)     # Market close/evening
         )
         
-        # Randomly decide type with bias toward preferred times
-        if stock_market_preferred:
-            is_stock_market = random.random() < 0.65  # 65% chance for stock market
-        else:
-            is_stock_market = random.random() < 0.35  # 35% chance for stock market
+        politics_preferred = (
+            (7 <= current_hour < 9) or   # Early morning
+            (12 <= current_hour < 14) or  # Lunch/afternoon
+            (18 <= current_hour < 22)     # Evening/night
+        )
         
-        return True, is_stock_market
+        # Randomly decide type with bias toward preferred times
+        rand = random.random()
+        
+        if stock_market_preferred:
+            # Higher chance for stock market during trading hours
+            if rand < 0.50:
+                return True, 'stock_market'
+            elif rand < 0.75:
+                return True, 'politics'
+            else:
+                return True, 'trending'
+        elif politics_preferred:
+            # Higher chance for politics during preferred hours
+            if rand < 0.50:
+                return True, 'politics'
+            elif rand < 0.75:
+                return True, 'stock_market'
+            else:
+                return True, 'trending'
+        else:
+            # Other hours - more balanced, trending gets more chance
+            if rand < 0.40:
+                return True, 'politics'
+            elif rand < 0.70:
+                return True, 'stock_market'
+            else:
+                return True, 'trending'
     
     def post_tweet(self, force_post=False):
         """
@@ -109,8 +140,9 @@ class TwitterAutomation:
         print("="*50)
         
         # Randomly decide if we should post now (to avoid looking automated)
-        should_post, is_stock_market = self._should_post_now(force_post=force_post)
-        current_time = datetime.now(self.ist).strftime('%Y-%m-%d %H:%M:%S IST')
+        # Manual triggers always post
+        should_post, post_type_enum = self._should_post_now(force_post=force_post)
+        # current_time already set above, reuse it
         
         if not should_post:
             print("\n" + "="*50)
@@ -123,11 +155,17 @@ class TwitterAutomation:
             print("="*50)
             return
         
-        post_type = "📈 Stock Market" if is_stock_market else "🏛️  Politics"
+        # Map post type enum to display name
+        post_type_map = {
+            'politics': '🏛️  Politics',
+            'stock_market': '📈 Stock Market',
+            'trending': '🔥 Trending Topics'
+        }
+        post_type = post_type_map.get(post_type_enum, '📝 General')
         print(f"\n📌 Post type: {post_type} (random time)")
         
-        # STEP 1: Fetch trending topics FIRST (priority for maximum reach)
-        print("\n🔥 Fetching Twitter trends (PRIORITY)...")
+        # STEP 1: Fetch trending topics FIRST (always needed)
+        print("\n🔥 Fetching Twitter trends...")
         trending_topics = self.twitter_poster.get_trending_topics()
         if trending_topics:
             print(f"✅ Found {len(trending_topics)} trending topics")
@@ -136,63 +174,117 @@ class TwitterAutomation:
             print("⚠️  Could not fetch trends, continuing without them...")
             trending_topics = []
         
-        # STEP 2: Fetch latest news (political or stock market)
-        if is_stock_market:
-            print("\n📈 Fetching latest stock market news...")
-            articles = self.news_fetcher.fetch_stock_market_news(max_results=15)
-        else:
-            print("\n📰 Fetching latest political news...")
-            articles = self.news_fetcher.fetch_latest_news(max_results=15)
-        
-        if not articles:
-            print("\n" + "="*50)
-            print(f"⏸️  SKIP DECISION")
-            print(f"⏰ Time: {current_time}")
-            print(f"📌 Type: {post_type}")
-            print(f"❌ Reason: No articles found")
-            print(f"✅ Status: Skipped (no content available)")
-            print("="*50)
-            return
-        
-        print(f"✅ Found {len(articles)} articles")
-        
-        # STEP 3: Prioritize articles that match trending topics
-        if trending_topics:
-            articles = self.news_fetcher.prioritize_by_trends(articles, trending_topics)
-            print(f"📊 Re-prioritized articles based on trending topics")
-        
-        # STEP 4: Find an article that hasn't been posted
-        article_to_post = None
-        for article in articles:
-            article_url = article.get('url', '')
-            article_title = article.get('title', '')
+        # STEP 2: Handle different post types
+        if post_type_enum == 'trending':
+            # For trending posts, create tweet directly from trending topics
+            if not trending_topics:
+                print("\n" + "="*50)
+                print(f"⏸️  SKIP DECISION")
+                print(f"⏰ Time: {current_time}")
+                print(f"📌 Type: {post_type}")
+                print(f"❌ Reason: No trending topics found")
+                print(f"✅ Status: Skipped (no trending content available)")
+                print("="*50)
+                return
             
-            # Check for duplicates before generating tweet
-            if article_url and not self.news_tracker.is_already_posted(article_url, article_title):
-                article_to_post = article
-                break
+            # Select a trending topic that hasn't been posted about
+            trending_topic_to_post = None
+            for trend in trending_topics[:10]:  # Check top 10 trends
+                # Check if we've posted about this trend recently
+                trend_normalized = trend.replace('#', '').lower().strip()
+                if not self.news_tracker.is_already_posted('', trend_normalized):
+                    trending_topic_to_post = trend
+                    break
+            
+            if not trending_topic_to_post:
+                print("\n" + "="*50)
+                print(f"⏸️  SKIP DECISION")
+                print(f"⏰ Time: {current_time}")
+                print(f"📌 Type: {post_type}")
+                print(f"⚠️  Reason: All trending topics already posted")
+                print(f"✅ Status: Skipped (avoiding duplicates)")
+                print("="*50)
+                return
+            
+            print(f"\n🔥 Selected trending topic: {trending_topic_to_post}")
+            
+            # Generate controversial tweet about trending topic
+            print(f"\n🤖 Generating CONTROVERSIAL, funky tweet about trending topic...")
+            tweet_text = self.content_generator.generate_trending_tweet(
+                trending_topic_to_post,
+                trending_topics
+            )
+            
+            # Create fake article summary for tracking
+            article_summary = {
+                'title': f"Trending: {trending_topic_to_post}",
+                'description': f"Current trending topic on Twitter: {trending_topic_to_post}",
+                'url': f"https://twitter.com/search?q={trending_topic_to_post.replace('#', '%23')}",
+                'source': 'Twitter Trends',
+                'published_at': datetime.now(self.ist).isoformat(),
+                'image_url': ''  # Trending topics don't have images
+            }
+            
+        else:
+            # For politics and stock market, fetch news articles
+            if post_type_enum == 'stock_market':
+                print("\n📈 Fetching latest stock market news...")
+                articles = self.news_fetcher.fetch_stock_market_news(max_results=15)
+            else:  # politics
+                print("\n📰 Fetching latest political news...")
+                articles = self.news_fetcher.fetch_latest_news(max_results=15)
+            
+            if not articles:
+                print("\n" + "="*50)
+                print(f"⏸️  SKIP DECISION")
+                print(f"⏰ Time: {current_time}")
+                print(f"📌 Type: {post_type}")
+                print(f"❌ Reason: No articles found")
+                print(f"✅ Status: Skipped (no content available)")
+                print("="*50)
+                return
+            
+            print(f"✅ Found {len(articles)} articles")
+            
+            # STEP 3: Prioritize articles that match trending topics
+            if trending_topics:
+                articles = self.news_fetcher.prioritize_by_trends(articles, trending_topics)
+                print(f"📊 Re-prioritized articles based on trending topics")
+            
+            # STEP 4: Find an article that hasn't been posted
+            article_to_post = None
+            for article in articles:
+                article_url = article.get('url', '')
+                article_title = article.get('title', '')
+                
+                # Check for duplicates before generating tweet
+                if article_url and not self.news_tracker.is_already_posted(article_url, article_title):
+                    article_to_post = article
+                    break
+            
+            if not article_to_post:
+                print("\n" + "="*50)
+                print(f"⏸️  SKIP DECISION")
+                print(f"⏰ Time: {current_time}")
+                print(f"📌 Type: {post_type}")
+                print(f"⚠️  Reason: All recent articles already posted")
+                print(f"✅ Status: Skipped (avoiding duplicates)")
+                print("="*50)
+                return
+            
+            # Get article summary
+            article_summary = self.news_fetcher.get_article_summary(article_to_post)
+            print(f"\n📄 Selected article: {article_summary['title'][:80]}...")
+            
+            # STEP 5: Generate controversial funky tweet with TRENDING PRIORITY
+            print(f"\n🤖 Generating CONTROVERSIAL, funky tweet with TRENDING hashtags...")
+            tweet_text = self.content_generator.generate_funky_tweet(
+                article_summary, 
+                trending_topics, 
+                is_stock_market=(post_type_enum == 'stock_market')
+            )
         
-        if not article_to_post:
-            print("\n" + "="*50)
-            print(f"⏸️  SKIP DECISION")
-            print(f"⏰ Time: {current_time}")
-            print(f"📌 Type: {post_type}")
-            print(f"⚠️  Reason: All recent articles already posted")
-            print(f"✅ Status: Skipped (avoiding duplicates)")
-            print("="*50)
-            return
-        
-        # Get article summary
-        article_summary = self.news_fetcher.get_article_summary(article_to_post)
-        print(f"\n📄 Selected article: {article_summary['title'][:80]}...")
-        
-        # STEP 5: Generate controversial funky tweet with TRENDING PRIORITY
-        print(f"\n🤖 Generating CONTROVERSIAL, funky tweet with TRENDING hashtags...")
-        tweet_text = self.content_generator.generate_funky_tweet(
-            article_summary, 
-            trending_topics, 
-            is_stock_market=is_stock_market
-        )
+        # STEP 6: Final duplicate check on generated tweet content (for all types)
         print(f"✅ Generated tweet ({len(tweet_text)} chars)")
         print(f"📝 Preview: {tweet_text[:150]}...")
         
