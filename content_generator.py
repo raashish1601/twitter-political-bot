@@ -123,6 +123,11 @@ Generate ONLY the tweet text with the trending hashtag, nothing else:"""
         """
         Try to generate trending tweet using free APIs
         """
+        # Get current date for context
+        current_date = datetime.now()
+        current_year = current_date.year
+        current_month = current_date.month
+        
         other_trends = ""
         if all_trending_topics:
             other_trends_list = [t for t in all_trending_topics[:5] if t != trending_topic]
@@ -283,6 +288,11 @@ Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Include hashtag
         description = news_article.get('description', '') or title
         source = news_article.get('source', '')
         
+        # Get current date for context
+        current_date = datetime.now()
+        current_year = current_date.year
+        current_month = current_date.month
+        
         # Build trending context
         trending_context = ""
         if trending_topics:
@@ -441,6 +451,11 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
         """
         Generate tweet using Groq API (free tier, very fast)
         """
+        # Get current date for context
+        current_date = datetime.now()
+        current_year = current_date.year
+        current_month = current_date.month
+        
         try:
             from groq import Groq
             client = Groq(api_key=self.groq_api_key)
@@ -463,6 +478,8 @@ Requirements:
 Generate ONLY the tweet text:"""
             else:
                 prompt = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news that will CREATE DEBATE using STRONG LANGUAGE. The tweet MUST be COMPLETE - no incomplete sentences.
+
+IMPORTANT: Current date is {current_year}-{current_month:02d}. DO NOT reference past dates or future dates that have already passed. Use current year {current_year} or general references.
 
 News: {title}
 Description: {description}{trending_context}
@@ -532,7 +549,9 @@ IMPORTANT: Current date is {current_year}-{current_month:02d}. DO NOT reference 
 
 Make it EXTREMELY CONTROVERSIAL, OFFENSIVE, use STRONG LANGUAGE. Expose market manipulation. Max 280 characters. Generate ONLY the tweet:"""
             else:
-                prompt_text = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news. The tweet MUST be COMPLETE - no incomplete sentences:
+                prompt_text = f"""Create a COMPLETE, FINISHED EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 chars) about this Indian political news. The tweet MUST be COMPLETE - no incomplete sentences.
+
+IMPORTANT: Current date is {current_year}-{current_month:02d}. DO NOT reference past dates or future dates that have already passed. Use current year {current_year} or general references.
 
 {title}
 {description}{trending_context}
