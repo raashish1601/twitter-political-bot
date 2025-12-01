@@ -19,6 +19,13 @@ NEWS_API_KEY=your_news_api_key_here
 # OpenAI API
 # Get your API key from https://platform.openai.com/api-keys
 OPENAI_API_KEY=your_openai_api_key_here
+
+# Optional: Free API alternatives (for fallback when OpenAI fails)
+# Groq API (free tier) - Get from https://console.groq.com/keys
+GROQ_API_KEY=your_groq_api_key_here
+
+# Hugging Face API (free tier) - Get from https://huggingface.co/settings/tokens
+HUGGINGFACE_API_KEY=your_huggingface_api_key_here
 EOF
 
 echo "✅ .env file created successfully!"
