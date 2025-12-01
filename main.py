@@ -288,7 +288,7 @@ class TwitterAutomation:
         print(f"✅ Generated tweet ({len(tweet_text)} chars)")
         print(f"📝 Preview: {tweet_text[:150]}...")
         
-        # STEP 6: Final duplicate check on generated tweet content
+        # STEP 7: Final duplicate check on generated tweet content
         if self.news_tracker.is_already_posted(
             article_summary['url'], 
             article_summary['title'], 
