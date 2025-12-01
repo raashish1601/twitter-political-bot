@@ -151,6 +151,7 @@ class TwitterPoster:
         """
         Get trending topics for India (woeid 23424848)
         Returns list of trending topic names
+        Falls back to NewsAPI if Twitter trends API is not available
         """
         try:
             # Use existing API v1.1 instance for trends (v2 doesn't have trends endpoint)
@@ -161,6 +162,84 @@ class TwitterPoster:
                 return trending_list
             return []
         except Exception as e:
-            print(f"⚠️  Could not fetch trends: {e}")
+            error_msg = str(e)
+            if '403' in error_msg or 'Forbidden' in error_msg:
+                print(f"⚠️  Twitter trends API not available (requires higher access level)")
+                print(f"🔄 Falling back to NewsAPI for trending topics...")
+                return self._get_trending_from_newsapi()
+            else:
+                print(f"⚠️  Could not fetch trends: {e}")
+                return self._get_trending_from_newsapi()
+    
+    def _get_trending_from_newsapi(self):
+        """
+        Fallback: Get trending topics from NewsAPI by fetching popular news
+        """
+        try:
+            import os
+            from datetime import datetime, timedelta
+            news_api_key = os.getenv('NEWS_API_KEY')
+            
+            if not news_api_key:
+                print("⚠️  NEWS_API_KEY not found, cannot fetch trending topics")
+                return []
+            
+            # Fetch popular news from India (sorted by popularity/relevancy)
+            base_url = 'https://newsapi.org/v2/everything'
+            from_date = (datetime.now() - timedelta(hours=6)).strftime('%Y-%m-%dT%H:%M:%S')
+            
+            params = {
+                'q': 'India OR Indian',
+                'language': 'en',
+                'sortBy': 'popularity',  # Sort by popularity to get trending topics
+                'pageSize': 20,
+                'from': from_date,
+                'apiKey': news_api_key
+            }
+            
+            response = requests.get(base_url, params=params, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            if data.get('status') == 'ok':
+                articles = data.get('articles', [])
+                
+                # Extract trending topics from article titles
+                trending_topics = []
+                seen_topics = set()
+                
+                for article in articles[:15]:
+                    title = article.get('title', '')
+                    if title:
+                        # Extract key terms from title (remove common words)
+                        words = title.split()
+                        # Get capitalized words or important terms (length > 4)
+                        key_terms = []
+                        for word in words:
+                            word_clean = word.strip('.,!?;:()[]{}"\'').strip()
+                            # Include if it's capitalized (likely a name/topic) or is a significant word
+                            if (word_clean and len(word_clean) > 4 and 
+                                (word_clean[0].isupper() or word_clean.lower() not in 
+                                 ['india', 'indian', 'news', 'latest', 'breaking', 'update', 'report', 'says', 'will', 'this', 'that', 'with', 'from', 'about'])):
+                                key_terms.append(word_clean)
+                        
+                        # Create topic from key terms
+                        if key_terms:
+                            topic = ' '.join(key_terms[:3])  # Take first 3 key terms
+                            topic_normalized = topic.lower()
+                            if topic_normalized not in seen_topics and len(topic) > 5:
+                                trending_topics.append(topic)
+                                seen_topics.add(topic_normalized)
+                
+                # Also add hashtag versions
+                hashtag_topics = [f"#{topic.replace(' ', '')}" if not topic.startswith('#') else topic 
+                                 for topic in trending_topics[:10]]
+                
+                print(f"✅ Generated {len(hashtag_topics)} trending topics from NewsAPI")
+                return hashtag_topics[:10]
+            
+            return []
+        except Exception as e:
+            print(f"⚠️  Could not fetch trending topics from NewsAPI: {e}")
             return []
 
