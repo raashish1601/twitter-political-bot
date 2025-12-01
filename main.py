@@ -13,6 +13,7 @@ from content_generator import ContentGenerator
 from twitter_poster import TwitterPoster
 from news_tracker import NewsTracker
 from scheduler import TweetScheduler
+from mention_handler import MentionHandler
 
 class TwitterAutomation:
     def __init__(self):
@@ -20,6 +21,7 @@ class TwitterAutomation:
         self.content_generator = ContentGenerator()
         self.twitter_poster = TwitterPoster()
         self.news_tracker = NewsTracker()
+        self.mention_handler = MentionHandler()
         self.post_counter = 0  # Track post count for alternating
         self.ist = pytz.timezone('Asia/Kolkata')  # IST timezone
         
@@ -129,6 +131,17 @@ class TwitterAutomation:
                 trending_topics
             )
             
+            # Add mentions for trending topics
+            tweet_with_mentions = self.mention_handler.add_mentions_to_tweet(
+                tweet_text,
+                is_stock_market=False
+            )
+            if tweet_with_mentions != tweet_text:
+                mentions = self.mention_handler.extract_mentions(tweet_text, is_stock_market=False)
+                if mentions:
+                    print(f"🏷️  Added mentions: {', '.join(mentions)}")
+                    tweet_text = tweet_with_mentions
+            
             # Create fake article summary for tracking
             article_summary = {
                 'title': f"Trending: {trending_topic_to_post}",
@@ -199,9 +212,22 @@ class TwitterAutomation:
                 is_stock_market=(post_type_enum == 'stock_market')
             )
         
-        # STEP 6: Final duplicate check on generated tweet content (for all types)
+        # STEP 6: Add relevant @mentions for maximum controversy and engagement
         print(f"✅ Generated tweet ({len(tweet_text)} chars)")
         print(f"📝 Preview: {tweet_text[:150]}...")
+        
+        # Add mentions based on content
+        is_stock_market_type = (post_type_enum == 'stock_market')
+        tweet_with_mentions = self.mention_handler.add_mentions_to_tweet(
+            tweet_text, 
+            is_stock_market=is_stock_market_type
+        )
+        
+        if tweet_with_mentions != tweet_text:
+            mentions = self.mention_handler.extract_mentions(tweet_text, is_stock_market_type)
+            if mentions:
+                print(f"🏷️  Added mentions: {', '.join(mentions)}")
+                tweet_text = tweet_with_mentions
         
         # STEP 7: Final duplicate check on generated tweet content (including topic check)
         if self.news_tracker.is_already_posted(
