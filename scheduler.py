@@ -12,15 +12,22 @@ class TweetScheduler:
         self.post_callback = post_callback
         self.ist = pytz.timezone('Asia/Kolkata')
         
-        # Optimal posting times (IST) with some randomization
+        # Optimal posting times (IST) - 12 posts per day (6 politics + 6 stock market)
+        # Politics: 7, 8, 12, 13, 18, 21
+        # Stock Market: 9, 10, 14, 15, 17, 19
         self.posting_times = [
-            (7, 0),   # 7:00 AM - Early morning
-            (9, 0),   # 9:00 AM - Morning peak
-            (12, 0),  # 12:00 PM - Midday
-            (14, 0),  # 2:00 PM - Afternoon
-            (17, 0),  # 5:00 PM - Evening start
-            (19, 0),  # 7:00 PM - Prime time
-            (21, 0)   # 9:00 PM - Night peak
+            (7, 0),   # 7:00 AM - Politics - Early morning
+            (8, 0),   # 8:00 AM - Politics - Morning commute
+            (9, 0),   # 9:00 AM - Stock Market - Market open
+            (10, 0),  # 10:00 AM - Stock Market - Morning trading
+            (12, 0),  # 12:00 PM - Politics - Lunch break
+            (13, 0),  # 1:00 PM - Politics - Afternoon
+            (14, 0),  # 2:00 PM - Stock Market - Mid-day trading
+            (15, 0),  # 3:00 PM - Stock Market - Afternoon trading
+            (17, 0),  # 5:00 PM - Stock Market - Market close
+            (18, 0),  # 6:00 PM - Politics - Evening
+            (19, 0),  # 7:00 PM - Stock Market - Evening analysis
+            (21, 0)   # 9:00 PM - Politics - Night peak
         ]
     
     def _get_randomized_time(self, hour, minute):

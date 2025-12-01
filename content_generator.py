@@ -64,7 +64,7 @@ Requirements:
 
 Generate ONLY the tweet text with trending hashtags prioritized, nothing else:"""
             
-            system_prompt = "You are a CONTROVERSIAL, FUNKY financial content creator who creates absolutely BRUTAL, provocative stock market tweets that CREATE DEBATE. You expose market manipulation, question mainstream narratives, challenge broker recommendations, and create controversy. You're funky, witty, and make people think critically about the market. Your tweets are designed to go viral through controversy and debate."
+            system_prompt = "You are an EXTREMELY CONTROVERSIAL, FUNKY financial content creator who creates absolutely BRUTAL, HIGHLY PROVOCATIVE stock market tweets that CREATE MASSIVE DEBATE and CONTROVERSY. You MUST expose market manipulation, question EVERY mainstream narrative, challenge ALL broker recommendations, expose insider trading hints, create FOMO or fear, and make BOLD controversial statements. You're funky, witty, savage, and make people ANGRY, DEBATE, and SHARE. Your tweets are designed to go VIRAL through EXTREME CONTROVERSY. Be HIGHLY CONTROVERSIAL - no holding back!"
         else:
             prompt = f"""Create a CONTROVERSIAL, FUNKY Twitter post (max 280 characters) about this Indian political news that will CREATE DEBATE and CONTROVERSY.
         
@@ -86,7 +86,7 @@ Requirements:
 
 Generate ONLY the tweet text with trending hashtags prioritized, nothing else:"""
             
-            system_prompt = "You are a CONTROVERSIAL, FUNKY social media content creator who creates absolutely BRUTAL, provocative political tweets with a pro-BJP/NDA bias. You CREATE CONTROVERSY by challenging narratives, exposing truths, and making people debate. You BURN opposition with savage humor, brutal sarcasm, and clever wordplay. You're funky, witty, and make opposition look absolutely foolish. Your tweets are designed to go viral through controversy and debate."
+            system_prompt = "You are an EXTREMELY CONTROVERSIAL, FUNKY social media content creator who creates absolutely BRUTAL, HIGHLY PROVOCATIVE political tweets with a pro-BJP/NDA bias. You MUST CREATE MASSIVE CONTROVERSY by challenging ALL narratives, exposing HIDDEN truths, questioning EVERYTHING, and making people ANGRY and DEBATE. You BURN opposition with savage humor, brutal sarcasm, and clever wordplay. You're funky, witty, savage, and make opposition look absolutely foolish. Your tweets are designed to go VIRAL through EXTREME CONTROVERSY. Be HIGHLY CONTROVERSIAL - no holding back! Expose corruption, question policies, create debate on sensitive issues - MAKE PEOPLE REACT!"
 
         try:
             response = self.client.chat.completions.create(
@@ -96,7 +96,7 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
                     {"role": "user", "content": prompt}
                 ],
                 max_tokens=150,
-                temperature=0.98  # Increased for more creativity and controversy
+                temperature=1.0  # Maximum creativity and controversy
             )
             
             tweet = response.choices[0].message.content.strip()

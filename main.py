@@ -21,12 +21,13 @@ class TwitterAutomation:
         
     def _should_post_stock_market(self):
         """
-        Determine if this should be a stock market post (3-4 out of 7 posts)
-        Using time-based logic: posts at 9 AM, 2 PM, 5 PM, 7 PM are stock market
+        Determine if this should be a stock market post (6 out of 12 posts)
+        Stock market posts at: 9, 10, 14, 15, 17, 19 (6 posts)
+        Politics posts at: 7, 8, 12, 13, 18, 21 (6 posts)
         """
         current_hour = datetime.now().hour
-        # Stock market posts at: 9 AM, 2 PM, 5 PM, 7 PM (4 posts)
-        stock_market_hours = [9, 14, 17, 19]
+        # Stock market posts at: 9 AM, 10 AM, 2 PM, 3 PM, 5 PM, 7 PM (6 posts)
+        stock_market_hours = [9, 10, 14, 15, 17, 19]
         return current_hour in stock_market_hours
     
     def post_tweet(self):
