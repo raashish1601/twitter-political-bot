@@ -132,14 +132,21 @@ class TwitterAutomation:
             )
             
             # Add mentions for trending topics
-            tweet_with_mentions = self.mention_handler.add_mentions_to_tweet(
+            mentions = self.mention_handler.extract_mentions(
                 tweet_text,
-                is_stock_market=False
+                is_stock_market=False,
+                article_title=f"Trending: {trending_topic_to_post}",
+                article_description=f"Current trending topic: {trending_topic_to_post}"
             )
-            if tweet_with_mentions != tweet_text:
-                mentions = self.mention_handler.extract_mentions(tweet_text, is_stock_market=False)
-                if mentions:
-                    print(f"🏷️  Added mentions: {', '.join(mentions)}")
+            if mentions:
+                print(f"🏷️  Extracted mentions: {', '.join(mentions)}")
+                tweet_with_mentions = self.mention_handler.add_mentions_to_tweet(
+                    tweet_text,
+                    is_stock_market=False,
+                    mentions=mentions
+                )
+                if tweet_with_mentions != tweet_text:
+                    print(f"🏷️  Added mentions to tweet: {', '.join(mentions)}")
                     tweet_text = tweet_with_mentions
             
             # Create fake article summary for tracking
@@ -216,17 +223,28 @@ class TwitterAutomation:
         print(f"✅ Generated tweet ({len(tweet_text)} chars)")
         print(f"📝 Preview: {tweet_text[:150]}...")
         
-        # Add mentions based on content
+        # Add mentions based on content (with article context for better extraction)
         is_stock_market_type = (post_type_enum == 'stock_market')
-        tweet_with_mentions = self.mention_handler.add_mentions_to_tweet(
+        article_title = article_summary.get('title', '')
+        article_description = article_summary.get('description', '')
+        
+        # Extract mentions with article context for better company/CEO detection
+        mentions = self.mention_handler.extract_mentions(
             tweet_text, 
-            is_stock_market=is_stock_market_type
+            is_stock_market=is_stock_market_type,
+            article_title=article_title,
+            article_description=article_description
         )
         
-        if tweet_with_mentions != tweet_text:
-            mentions = self.mention_handler.extract_mentions(tweet_text, is_stock_market_type)
-            if mentions:
-                print(f"🏷️  Added mentions: {', '.join(mentions)}")
+        if mentions:
+            print(f"🏷️  Extracted mentions: {', '.join(mentions)}")
+            tweet_with_mentions = self.mention_handler.add_mentions_to_tweet(
+                tweet_text, 
+                is_stock_market=is_stock_market_type,
+                mentions=mentions
+            )
+            if tweet_with_mentions != tweet_text:
+                print(f"🏷️  Added mentions to tweet: {', '.join(mentions)}")
                 tweet_text = tweet_with_mentions
         
         # STEP 7: Final duplicate check on generated tweet content (including topic check)
