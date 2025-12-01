@@ -27,17 +27,19 @@ class TwitterAutomation:
     def _get_post_type(self):
         """
         Randomly select post type (politics, stock_market, or trending)
-        Uses date + minute as seed for consistent randomness per day, but different each run
+        Uses time-based seed for better distribution across runs
         Returns: post_type: str where post_type is 'politics', 'stock_market', or 'trending'
         """
         # Get current time in IST
         current_time = datetime.now(self.ist)
         current_date = current_time.strftime('%Y-%m-%d')
+        current_hour = current_time.hour
         current_minute = current_time.minute
+        current_second = current_time.second
         
-        # Use date + minute as seed for consistent randomness per day, but varied per run
-        # This ensures we get roughly equal distribution (16 each) across 48 posts per day
-        seed_string = f"{current_date}_{current_minute}_{random.random()}"
+        # Use date + hour + minute + second for better distribution
+        # This ensures different types across different times of day
+        seed_string = f"{current_date}_{current_hour}_{current_minute}_{current_second}"
         seed = int(hashlib.md5(seed_string.encode()).hexdigest(), 16) % (10**8)
         random.seed(seed)
         
@@ -162,7 +164,7 @@ class TwitterAutomation:
             # For politics and stock market, fetch news articles
             if post_type_enum == 'stock_market':
                 print("\n📈 Fetching latest stock market news...")
-                articles = self.news_fetcher.fetch_stock_market_news(max_results=15)
+                articles = self.news_fetcher.fetch_stock_market_news(max_results=20)
             else:  # politics
                 print("\n📰 Fetching latest political news...")
                 articles = self.news_fetcher.fetch_latest_news(max_results=15)
@@ -265,8 +267,11 @@ class TwitterAutomation:
         # Post to Twitter with image if available
         print("\n🐦 Posting to Twitter...")
         image_url = article_summary.get('image_url', '')
-        if image_url:
-            print(f"🖼️  Article has image, will include in tweet")
+        if image_url and image_url.strip() and image_url != 'null' and image_url.startswith('http'):
+            print(f"🖼️  Article has image: {image_url[:50]}..., will include in tweet")
+        else:
+            print(f"ℹ️  No valid image URL found (image_url: {image_url})")
+            image_url = None
         success, tweet_id = self.twitter_poster.post_tweet(tweet_text, image_url=image_url)
         
         if success:

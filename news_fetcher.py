@@ -15,10 +15,24 @@ class NewsFetcher:
         
     def fetch_latest_news(self, max_results=10):
         """
-        Fetch latest Indian political news with BJP/NDA focus
+        Fetch latest Indian political news - diverse topics covering all aspects
         """
-        # Keywords for BJP/NDA and Indian politics
-        query = '(BJP OR NDA OR Modi OR "Prime Minister" OR "Indian politics" OR Congress OR opposition) AND India'
+        # Diverse political topics: government, elections, policies, states, leaders, etc.
+        # Rotate queries to get diverse content
+        import random
+        queries = [
+            '(India politics OR "Indian government" OR "state government" OR "central government" OR "political party" OR election OR "political news") AND India',
+            '(BJP OR NDA OR Congress OR AAP OR TMC OR "regional party" OR "political alliance" OR "coalition government") AND India',
+            '(Modi OR "Prime Minister" OR "Chief Minister" OR "political leader" OR "government policy" OR "government scheme") AND India',
+            '(India election OR "voting" OR "poll" OR "political campaign" OR "political rally" OR "political speech") AND India',
+            '(India policy OR "government decision" OR "cabinet" OR "parliament" OR "Lok Sabha" OR "Rajya Sabha") AND India',
+            '(India state OR "state politics" OR "state election" OR "state government" OR "regional politics") AND India',
+            '(India economy OR "economic policy" OR "budget" OR "finance minister" OR "economic growth") AND India',
+            '(India defense OR "foreign policy" OR "diplomacy" OR "international relations" OR "India China" OR "India Pakistan") AND India',
+            '(India social OR "social policy" OR "welfare scheme" OR "health policy" OR "education policy") AND India',
+            '(India infrastructure OR "development" OR "project" OR "construction" OR "urban development" OR "rural development") AND India'
+        ]
+        query = random.choice(queries)
         
         # Get news from last 24 hours
         from_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
