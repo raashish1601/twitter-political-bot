@@ -291,26 +291,26 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
             funky_intro = random.choice(controversial_intros)
         else:
             # Controversial political intros
-        opposition_keywords = ['congress', 'rahul', 'opposition', 'alliance', 'aap', 'tmc', 'kejriwal', 'mamata']
-        bjp_keywords = ['bjp', 'nda', 'modi', 'yogi', 'shah']
-        
-        if any(kw in text_lower for kw in opposition_keywords):
-            funky_intros = [
-                        "🚨 Opposition exposed again! 😂 BJP keeps winning! 🔥\n\n",
-                        "💀 Another L for opposition... Meanwhile development continues! 😏\n\n",
-                        "⚡ Opposition: *exists* \nBJP: *wins* \nThe truth hurts! 💪\n\n",
-                        "🔥 Opposition doing mental gymnastics while BJP delivers... Facts! 🚀\n\n"
-            ]
-            funky_intro = random.choice(funky_intros)
-        elif any(kw in text_lower for kw in bjp_keywords):
-            funky_intros = [
-                        "🚀 Another W for development! Opposition seething! 🔥\n\n",
-                        "💪 BJP delivering as usual! Facts don't care about feelings! 🎯\n\n",
-                        "🔥 Modi ji at it again! Development > Drama! ⚡\n\n"
-            ]
-            funky_intro = random.choice(funky_intros)
-        else:
-                    funky_intro = "🚨 Latest from Indian politics (the truth they hide): 💪\n\n"
+            opposition_keywords = ['congress', 'rahul', 'opposition', 'alliance', 'aap', 'tmc', 'kejriwal', 'mamata']
+            bjp_keywords = ['bjp', 'nda', 'modi', 'yogi', 'shah']
+            
+            if any(kw in text_lower for kw in opposition_keywords):
+                funky_intros = [
+                    "🚨 Opposition exposed again! 😂 BJP keeps winning! 🔥\n\n",
+                    "💀 Another L for opposition... Meanwhile development continues! 😏\n\n",
+                    "⚡ Opposition: *exists* \nBJP: *wins* \nThe truth hurts! 💪\n\n",
+                    "🔥 Opposition doing mental gymnastics while BJP delivers... Facts! 🚀\n\n"
+                ]
+                funky_intro = random.choice(funky_intros)
+            elif any(kw in text_lower for kw in bjp_keywords):
+                funky_intros = [
+                    "🚀 Another W for development! Opposition seething! 🔥\n\n",
+                    "💪 BJP delivering as usual! Facts don't care about feelings! 🎯\n\n",
+                    "🔥 Modi ji at it again! Development > Drama! ⚡\n\n"
+                ]
+                funky_intro = random.choice(funky_intros)
+            else:
+                funky_intro = "🚨 Latest from Indian politics (the truth they hide): 💪\n\n"
         
         # Ensure hashtags are not empty - add at least one if missing
         if not hashtags or len(hashtags.strip()) == 0:
@@ -430,38 +430,38 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
             if '#StockMarket' not in ' '.join(hashtags):
                 hashtags.append('#StockMarket')
         else:
-        # PRIORITY 2: Content-relevant political party hashtags
-        if 'bjp' in text_lower or 'modi' in text_lower or 'nda' in text_lower:
-            if '#BJP' not in ' '.join(hashtags):
-                hashtags.append('#BJP')
-            if '#NDA' not in ' '.join(hashtags):
-                hashtags.append('#NDA')
-        if 'congress' in text_lower or 'rahul' in text_lower:
-            if '#Congress' not in ' '.join(hashtags):
-                hashtags.append('#Congress')
-        if 'aap' in text_lower or 'kejriwal' in text_lower:
-            if '#AAP' not in ' '.join(hashtags):
-                hashtags.append('#AAP')
-        if 'tmc' in text_lower or 'mamata' in text_lower:
-            if '#TMC' not in ' '.join(hashtags):
-                hashtags.append('#TMC')
-        
-        # PRIORITY 3: Topic-based hashtags (if space available)
-        if len(hashtags) < 5:
-            if 'west bengal' in text_lower or 'bengal' in text_lower:
-                hashtags.append('#WestBengal')
-            if 'delhi' in text_lower:
-                hashtags.append('#Delhi')
-            if 'election' in text_lower or 'poll' in text_lower:
-                hashtags.append('#Elections')
-            if 'development' in text_lower or 'growth' in text_lower:
-                hashtags.append('#Development')
-            if 'infiltration' in text_lower or 'immigration' in text_lower:
-                hashtags.append('#NationalSecurity')
-        
-        # PRIORITY 4: Always add India (if space)
-        if '#India' not in ' '.join(hashtags) and len(hashtags) < 6:
-            hashtags.append('#India')
+            # PRIORITY 2: Content-relevant political party hashtags
+            if 'bjp' in text_lower or 'modi' in text_lower or 'nda' in text_lower:
+                if '#BJP' not in ' '.join(hashtags):
+                    hashtags.append('#BJP')
+                if '#NDA' not in ' '.join(hashtags):
+                    hashtags.append('#NDA')
+            if 'congress' in text_lower or 'rahul' in text_lower:
+                if '#Congress' not in ' '.join(hashtags):
+                    hashtags.append('#Congress')
+            if 'aap' in text_lower or 'kejriwal' in text_lower:
+                if '#AAP' not in ' '.join(hashtags):
+                    hashtags.append('#AAP')
+            if 'tmc' in text_lower or 'mamata' in text_lower:
+                if '#TMC' not in ' '.join(hashtags):
+                    hashtags.append('#TMC')
+            
+            # PRIORITY 3: Topic-based hashtags (if space available)
+            if len(hashtags) < 5:
+                if 'west bengal' in text_lower or 'bengal' in text_lower:
+                    hashtags.append('#WestBengal')
+                if 'delhi' in text_lower:
+                    hashtags.append('#Delhi')
+                if 'election' in text_lower or 'poll' in text_lower:
+                    hashtags.append('#Elections')
+                if 'development' in text_lower or 'growth' in text_lower:
+                    hashtags.append('#Development')
+                if 'infiltration' in text_lower or 'immigration' in text_lower:
+                    hashtags.append('#NationalSecurity')
+            
+            # PRIORITY 4: Always add India (if space)
+            if '#India' not in ' '.join(hashtags) and len(hashtags) < 6:
+                hashtags.append('#India')
         
         # Limit to 5-6 hashtags max (Twitter best practice)
         return ' '.join(hashtags[:6])
