@@ -159,10 +159,12 @@ class TwitterAutomation:
             
             # Select a trending topic that hasn't been posted about
             trending_topic_to_post = None
-            for trend in trending_topics[:10]:  # Check top 10 trends
-                # Check if we've posted about this trend recently
-                trend_normalized = trend.replace('#', '').lower().strip()
-                if not self.news_tracker.is_already_posted('', trend_normalized):
+            for trend in trending_topics[:15]:  # Check top 15 trends
+                # Check if we've posted about this trend recently (by topic)
+                trend_normalized = trend.replace('#', '').strip()
+                # Create a title-like string for topic extraction
+                trend_title = f"Trending: {trend_normalized}"
+                if not self.news_tracker.is_already_posted('', trend_title, None, trend_title):
                     trending_topic_to_post = trend
                     break
             
@@ -226,9 +228,10 @@ class TwitterAutomation:
             for article in articles:
                 article_url = article.get('url', '')
                 article_title = article.get('title', '')
+                article_description = article.get('description', '')
                 
-                # Check for duplicates before generating tweet
-                if article_url and not self.news_tracker.is_already_posted(article_url, article_title):
+                # Check for duplicates before generating tweet (including topic check)
+                if article_url and not self.news_tracker.is_already_posted(article_url, article_title, None, article_description):
                     article_to_post = article
                     break
             
@@ -258,11 +261,12 @@ class TwitterAutomation:
         print(f"✅ Generated tweet ({len(tweet_text)} chars)")
         print(f"📝 Preview: {tweet_text[:150]}...")
         
-        # STEP 7: Final duplicate check on generated tweet content
+        # STEP 7: Final duplicate check on generated tweet content (including topic check)
         if self.news_tracker.is_already_posted(
             article_summary['url'], 
             article_summary['title'], 
-            tweet_text
+            tweet_text,
+            article_summary.get('description', '')
         ):
             print("\n" + "="*50)
             print(f"⏸️  SKIP DECISION")
@@ -281,12 +285,13 @@ class TwitterAutomation:
         success, tweet_id = self.twitter_poster.post_tweet(tweet_text, image_url=image_url)
         
         if success:
-            # Mark as posted (including tweet text for future duplicate detection)
+            # Mark as posted (including tweet text and topic for future duplicate detection)
             self.news_tracker.mark_as_posted(
                 article_summary['url'],
                 article_summary['title'],
                 tweet_id,
-                tweet_text  # Store tweet text for duplicate checking
+                tweet_text,  # Store tweet text for duplicate checking
+                article_summary.get('description', '')  # Store description for topic extraction
             )
             print("\n" + "="*50)
             print(f"✅ TWEET POSTED SUCCESSFULLY!")

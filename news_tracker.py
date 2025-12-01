@@ -49,10 +49,60 @@ class NewsTracker:
             return 0.0
         return SequenceMatcher(None, text1.lower(), text2.lower()).ratio()
     
-    def is_already_posted(self, article_url, article_title=None, tweet_text=None):
+    def _extract_topic(self, title, description=None):
         """
-        Check if an article has already been posted
-        Uses multiple checks: URL, title similarity, and tweet content similarity
+        Extract main topic/subject from article title and description
+        Returns a normalized topic string for comparison
+        """
+        if not title:
+            return ""
+        
+        # Combine title and description
+        text = title
+        if description:
+            text = f"{title} {description}"
+        
+        # Normalize
+        text = self._normalize_text(text)
+        
+        # Remove common words and extract key entities
+        # Remove common stop words
+        stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'should', 'could', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those', 'it', 'its', 'they', 'them', 'their', 'what', 'which', 'who', 'whom', 'whose', 'where', 'when', 'why', 'how', 'about', 'into', 'through', 'during', 'including', 'against', 'among', 'throughout', 'despite', 'towards', 'upon', 'concerning', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'including', 'against', 'among', 'throughout', 'despite', 'towards', 'upon', 'concerning', 'india', 'indian'}
+        
+        # Extract meaningful words (nouns, proper nouns, key terms)
+        words = text.split()
+        # Keep words that are:
+        # - Longer than 3 characters
+        # - Not in stop words
+        # - Capitalized (likely proper nouns) or important keywords
+        key_words = []
+        for word in words:
+            word_clean = word.strip('.,!?;:()[]{}"\'').lower()
+            if len(word_clean) > 3 and word_clean not in stop_words:
+                key_words.append(word_clean)
+        
+        # Return top 5-7 key words as topic signature
+        return ' '.join(sorted(set(key_words))[:7])
+    
+    def _extract_topic_from_tweet(self, tweet_text):
+        """
+        Extract main topic from tweet text (removing hashtags and common words)
+        """
+        if not tweet_text:
+            return ""
+        
+        # Remove hashtags for topic extraction
+        words = tweet_text.split()
+        content_words = [w for w in words if not w.startswith('#') and not w.startswith('@')]
+        text = ' '.join(content_words)
+        
+        # Normalize and extract key words
+        return self._extract_topic(text)
+    
+    def is_already_posted(self, article_url, article_title=None, tweet_text=None, description=None):
+        """
+        Check if an article/topic has already been posted
+        Uses multiple checks: URL, title similarity, topic extraction, and tweet content similarity
         """
         # Check 1: Exact URL match
         if article_url:
@@ -61,35 +111,69 @@ class NewsTracker:
                     print(f"🚫 Duplicate detected: Same URL already posted")
                     return True
         
-        # Check 2: Title similarity (catch same story from different sources)
+        # Check 2: Extract and compare topics (most important - ensures different topics)
+        current_topic = None
+        if article_title:
+            current_topic = self._extract_topic(article_title, description)
+        
+        if current_topic:
+            for item in self.posted_news:
+                # Get topic from stored item
+                stored_topic = item.get('topic', '')
+                if not stored_topic and item.get('title'):
+                    # Extract topic from stored title if not already stored
+                    stored_topic = self._extract_topic(item.get('title', ''), item.get('description', ''))
+                
+                if stored_topic and current_topic:
+                    # Compare topics - if they share significant keywords, it's the same topic
+                    current_words = set(current_topic.split())
+                    stored_words = set(stored_topic.split())
+                    
+                    # Calculate overlap
+                    if len(current_words) > 0 and len(stored_words) > 0:
+                        overlap = len(current_words & stored_words)
+                        total_unique = len(current_words | stored_words)
+                        topic_similarity = overlap / total_unique if total_unique > 0 else 0
+                        
+                        # If 60%+ of keywords overlap, it's the same topic
+                        if topic_similarity > 0.60:
+                            print(f"🚫 Duplicate detected: Same topic already posted ({(topic_similarity*100):.1f}% topic overlap)")
+                            print(f"   Previous topic: {stored_topic[:80]}...")
+                            print(f"   Current topic:  {current_topic[:80]}...")
+                            return True
+        
+        # Check 3: Title similarity (catch same story from different sources)
         if article_title:
             normalized_title = self._normalize_text(article_title)
             for item in self.posted_news:
                 posted_title = self._normalize_text(item.get('title', ''))
                 if posted_title and len(normalized_title) > 20:  # Only check if title is substantial
                     similarity = self._similarity_score(normalized_title, posted_title)
-                    if similarity > 0.85:  # 85% similarity threshold
+                    if similarity > 0.75:  # Lowered to 75% to catch more duplicates
                         print(f"🚫 Duplicate detected: Similar title ({(similarity*100):.1f}% match)")
                         print(f"   Previous: {item.get('title', '')[:60]}...")
                         print(f"   Current:  {article_title[:60]}...")
                         return True
         
-        # Check 3: Tweet content similarity (avoid posting similar tweets)
+        # Check 4: Tweet content topic extraction (avoid posting about same topic with different wording)
         if tweet_text:
-            normalized_tweet = self._normalize_text(tweet_text)
-            # Extract main content (remove hashtags for comparison)
-            tweet_content = ' '.join([w for w in normalized_tweet.split() if not w.startswith('#')])
-            
-            for item in self.posted_news:
-                if item.get('tweet_text'):
-                    posted_tweet = self._normalize_text(item.get('tweet_text', ''))
-                    posted_content = ' '.join([w for w in posted_tweet.split() if not w.startswith('#')])
-                    
-                    if len(tweet_content) > 50 and len(posted_content) > 50:
-                        similarity = self._similarity_score(tweet_content, posted_content)
-                        if similarity > 0.80:  # 80% similarity threshold for tweet content
-                            print(f"🚫 Duplicate detected: Similar tweet content ({(similarity*100):.1f}% match)")
-                            return True
+            tweet_topic = self._extract_topic_from_tweet(tweet_text)
+            if tweet_topic:
+                for item in self.posted_news:
+                    if item.get('tweet_text'):
+                        posted_tweet_topic = self._extract_topic_from_tweet(item.get('tweet_text', ''))
+                        if posted_tweet_topic:
+                            current_words = set(tweet_topic.split())
+                            posted_words = set(posted_tweet_topic.split())
+                            
+                            if len(current_words) > 0 and len(posted_words) > 0:
+                                overlap = len(current_words & posted_words)
+                                total_unique = len(current_words | posted_words)
+                                topic_similarity = overlap / total_unique if total_unique > 0 else 0
+                                
+                                if topic_similarity > 0.60:
+                                    print(f"🚫 Duplicate detected: Same topic in tweet ({(topic_similarity*100):.1f}% topic overlap)")
+                                    return True
         
         return False
     
