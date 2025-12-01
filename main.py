@@ -7,6 +7,7 @@ import os
 import random
 import hashlib
 from datetime import datetime
+import pytz
 from news_fetcher import NewsFetcher
 from content_generator import ContentGenerator
 from twitter_poster import TwitterPoster
@@ -20,6 +21,7 @@ class TwitterAutomation:
         self.twitter_poster = TwitterPoster()
         self.news_tracker = NewsTracker()
         self.post_counter = 0  # Track post count for alternating
+        self.ist = pytz.timezone('Asia/Kolkata')  # IST timezone
         
     def _should_post_now(self):
         """
@@ -27,7 +29,8 @@ class TwitterAutomation:
         Uses date-based seed for consistent randomness per day, but different each day
         Returns: (should_post: bool, is_stock_market: bool)
         """
-        current_time = datetime.now()
+        # Get current time in IST
+        current_time = datetime.now(self.ist)
         current_hour = current_time.hour
         current_date = current_time.strftime('%Y-%m-%d')
         
@@ -85,7 +88,7 @@ class TwitterAutomation:
         Main function to fetch news, generate tweet, and post
         Alternates between political and stock market news
         """
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S IST')
+        current_time = datetime.now(self.ist).strftime('%Y-%m-%d %H:%M:%S IST')
         print("\n" + "="*50)
         print(f"🚀 STARTING TWEET POSTING PROCESS")
         print(f"⏰ Time: {current_time}")
@@ -93,7 +96,7 @@ class TwitterAutomation:
         
         # Randomly decide if we should post now (to avoid looking automated)
         should_post, is_stock_market = self._should_post_now()
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S IST')
+        current_time = datetime.now(self.ist).strftime('%Y-%m-%d %H:%M:%S IST')
         
         if not should_post:
             print("\n" + "="*50)
