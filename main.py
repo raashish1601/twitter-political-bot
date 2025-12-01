@@ -80,50 +80,20 @@ class TwitterAutomation:
             return False, False
         
         # Determine post type based on hour and random factor
-        # Distribution: ~6 politics, ~6 stock market, ~3-4 trending per day
-        # Stock market: prefer 9-11 AM, 2-4 PM, 5-7 PM
-        # Politics: prefer 7-9 AM, 12-2 PM, 6-10 PM
-        # Trending: spread throughout the day (3-4 posts)
+        # Distribution: 6 politics, 6 stock market, 6 trending per day (18 total)
+        # Equal distribution throughout the day
         
-        stock_market_preferred = (
-            (9 <= current_hour < 11) or  # Morning trading
-            (14 <= current_hour < 16) or  # Afternoon trading
-            (17 <= current_hour < 19)     # Market close/evening
-        )
+        # Use date + hour to create consistent but varied distribution
+        # This ensures we get roughly equal posts from each category
+        hour_seed = int(hashlib.md5(f"{current_date}_{current_hour}".encode()).hexdigest(), 16) % 3
         
-        politics_preferred = (
-            (7 <= current_hour < 9) or   # Early morning
-            (12 <= current_hour < 14) or  # Lunch/afternoon
-            (18 <= current_hour < 22)     # Evening/night
-        )
-        
-        # Randomly decide type with bias toward preferred times
-        rand = random.random()
-        
-        if stock_market_preferred:
-            # Higher chance for stock market during trading hours
-            if rand < 0.50:
-                return True, 'stock_market'
-            elif rand < 0.75:
-                return True, 'politics'
-            else:
-                return True, 'trending'
-        elif politics_preferred:
-            # Higher chance for politics during preferred hours
-            if rand < 0.50:
-                return True, 'politics'
-            elif rand < 0.75:
-                return True, 'stock_market'
-            else:
-                return True, 'trending'
+        # Rotate between the three types based on hour seed
+        if hour_seed == 0:
+            return True, 'politics'
+        elif hour_seed == 1:
+            return True, 'stock_market'
         else:
-            # Other hours - more balanced, trending gets more chance
-            if rand < 0.40:
-                return True, 'politics'
-            elif rand < 0.70:
-                return True, 'stock_market'
-            else:
-                return True, 'trending'
+            return True, 'trending'
     
     def post_tweet(self, force_post=False):
         """

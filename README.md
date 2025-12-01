@@ -9,15 +9,15 @@ An automated Twitter bot that posts controversial, engaging tweets about Indian 
 - 🔥 **Trending Topics**: Controversial tweets about what's trending
 - 🤖 AI-powered content generation with OpenAI
 - 🐦 Automatic posting with images
-- ⏰ Random posting times (15-16 posts per day)
+- ⏰ Random posting times (18 posts per day)
 - 📝 Smart duplicate prevention
 - 🔥 Trending hashtags for maximum reach
 
 ## Post Types
 
-- **Politics** (~6 posts/day): BJP/NDA focused, burns opposition
-- **Stock Market** (~6 posts/day): Market manipulation, FII/DII games
-- **Trending Topics** (~3-4 posts/day): Controversial takes on trends
+- **Politics** (6 posts/day): Highly controversial, offensive, strong language - BJP/NDA focused, brutally burns opposition
+- **Stock Market** (6 posts/day): Highly controversial, offensive, strong language - Market manipulation, FII/DII games exposed
+- **Trending Topics** (6 posts/day): Highly controversial, offensive, strong language - Brutal takes on trends
 
 ## Setup
 

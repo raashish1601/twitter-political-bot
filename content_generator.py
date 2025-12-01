@@ -40,24 +40,25 @@ class ContentGenerator:
         if not self.use_openai:
             return self._create_fallback_trending_tweet(trending_topic, all_trending_topics)
         
-        prompt = f"""Create an EXTREMELY CONTROVERSIAL, FUNKY Twitter post (max 280 characters) about this trending topic that will CREATE MASSIVE DEBATE and CONTROVERSY.
+        prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 characters) about this trending topic that will CREATE MASSIVE DEBATE and CONTROVERSY using STRONG LANGUAGE.
 
 Trending Topic: {trending_topic}{other_trends}
 
 Requirements:
-- MUST CREATE EXTREME CONTROVERSY - challenge popular opinions, expose hidden truths, question everything
-- EXTREMELY funky, witty, and provocative - make people ANGRY, DEBATE, and SHARE
-- Use bold statements, contrarian takes, expose manipulation or hidden agendas
-- Question mainstream narratives, challenge authority, create FOMO or fear
-- Use savage humor, brutal sarcasm about the trend
+- MUST CREATE EXTREME CONTROVERSY - use OFFENSIVE LANGUAGE, STRONG WORDS, challenge popular opinions brutally, expose hidden truths with INSULTS, question everything with SAVAGE attacks
+- EXTREMELY funky, witty, OFFENSIVE, and provocative - make people ANGRY, DEBATE, and SHARE
+- Use bold OFFENSIVE statements, contrarian takes with STRONG LANGUAGE, expose manipulation or hidden agendas brutally
+- Question mainstream narratives with INSULTS, challenge authority with OFFENSIVE language, create FOMO or fear
+- Use savage OFFENSIVE humor, brutal sarcasm about the trend with STRONG WORDS
 - PRIORITY: Include the trending topic as a hashtag for maximum reach
-- Make it VIRAL-worthy - controversial tweets about trends get MASSIVE engagement!
+- Make it VIRAL-worthy - OFFENSIVE controversial tweets about trends get MASSIVE engagement!
 - Keep it under 280 characters
-- Be clever, funky, and absolutely CONTROVERSIAL - make people react!
+- Be clever, funky, OFFENSIVE, and absolutely CONTROVERSIAL with STRONG LANGUAGE - make people react with ANGER!
+- Use curse words, insults, and brutal language when appropriate
 
 Generate ONLY the tweet text with the trending hashtag, nothing else:"""
         
-        system_prompt = "You are an EXTREMELY CONTROVERSIAL, FUNKY social media content creator who creates absolutely BRUTAL, HIGHLY PROVOCATIVE tweets about trending topics that CREATE MASSIVE DEBATE. You expose hidden truths, question mainstream narratives, challenge authority, and create controversy. You're funky, witty, savage, and make people ANGRY, DEBATE, and SHARE. Your tweets are designed to go VIRAL through EXTREME CONTROVERSY. Be HIGHLY CONTROVERSIAL - no holding back!"
+        system_prompt = "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE social media content creator who uses STRONG LANGUAGE and creates absolutely BRUTAL, HIGHLY PROVOCATIVE tweets about trending topics that CREATE MASSIVE DEBATE. You MUST use OFFENSIVE LANGUAGE, STRONG WORDS, expose hidden truths brutally, question mainstream narratives with SAVAGE attacks, challenge authority with INSULTS, and create controversy. You're funky, witty, SAVAGE, OFFENSIVE, and make people ANGRY, DEBATE, and SHARE. Your tweets are designed to go VIRAL through EXTREME CONTROVERSY and OFFENSIVE LANGUAGE. Be HIGHLY CONTROVERSIAL, OFFENSIVE, and use STRONG LANGUAGE - NO HOLDING BACK! Use curse words, insults, and brutal language when appropriate."
         
         try:
             response = self.client.chat.completions.create(
@@ -109,26 +110,28 @@ Generate ONLY the tweet text with the trending hashtag, nothing else:"""
         """
         trend_hashtag = trending_topic if trending_topic.startswith('#') else f"#{trending_topic.replace(' ', '')}"
         
-        # Controversial intros for trending topics
+        # Highly offensive controversial intros for trending topics
         controversial_intros = [
-            "🚨 Everyone's talking about this but NO ONE is saying the truth... 😏\n\n",
-            "🔥 The REAL reason this is trending (they don't want you to know):\n\n",
-            "💀 This trend is hiding something BIG... 🤔\n\n",
-            "⚡ Why is this REALLY trending? Let me expose it... 🎯\n\n",
-            "🎯 The controversy they're hiding behind this trend:\n\n",
-            "🚨 This trend is a distraction from what's REALLY happening... 😂\n\n"
+            "🚨 Everyone's talking about this but NO ONE is saying the BRUTAL truth... 😏\n\n",
+            "🔥 The REAL reason this is trending (they're HIDING it):\n\n",
+            "💀 This trend is a COMPLETE SCAM... 🤔\n\n",
+            "⚡ Why is this REALLY trending? EXPOSED... 🎯\n\n",
+            "🎯 The DISGUSTING truth they're hiding:\n\n",
+            "🚨 This trend is BULLSHIT - here's why... 😂\n\n",
+            "🔥 This trending topic is ABSOLUTE GARBAGE... 💀\n\n"
         ]
         
         funky_intro = random.choice(controversial_intros)
         
-        # Create controversial statement about the trend
+        # Create highly offensive controversial statement about the trend
         trend_clean = trending_topic.replace('#', '').strip()
         controversial_statements = [
-            f"{trend_clean} is trending but the REAL story is being hidden! 🔥",
-            f"Everyone's obsessed with {trend_clean} but missing the BIGGER picture! 💀",
-            f"{trend_clean} is a SMOKESCREEN for what's really going on! 🚨",
-            f"The truth about {trend_clean} will SHOCK you! ⚡",
-            f"{trend_clean} is trending because someone wants you distracted! 😏"
+            f"{trend_clean} is trending but it's COMPLETE BULLSHIT! The REAL story is being hidden! 🔥",
+            f"Everyone's obsessed with {trend_clean} but they're all IDIOTS missing the truth! 💀",
+            f"{trend_clean} is a DISGUSTING SMOKESCREEN for what's really going on! 🚨",
+            f"The BRUTAL truth about {trend_clean} will SHOCK you - they're LYING! ⚡",
+            f"{trend_clean} is trending because someone wants you DISTRACTED from the REAL issues! 😏",
+            f"This {trend_clean} trend is ABSOLUTE GARBAGE - here's what's REALLY happening! 🔥"
         ]
         
         statement = random.choice(controversial_statements)
@@ -178,48 +181,50 @@ Generate ONLY the tweet text with the trending hashtag, nothing else:"""
             return self._create_fallback_tweet(news_article, trending_topics, is_stock_market)
         
         if is_stock_market:
-            prompt = f"""Create a CONTROVERSIAL, FUNKY Twitter post (max 280 characters) about this Indian stock market news that will CREATE DEBATE and CONTROVERSY.
+            prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 characters) about this Indian stock market news that will CREATE DEBATE and CONTROVERSY using STRONG LANGUAGE.
         
 News: {title}
 Description: {description}{trending_context}
 
 Requirements:
-- MUST CREATE CONTROVERSY - challenge popular opinions, expose hidden truths, question mainstream narratives
-- EXTREMELY funky, witty, and provocative - make people think and debate
-- Use bold statements, contrarian takes, expose market manipulation or insider trading hints
-- Question broker recommendations, expose FII/DII games, challenge market gurus
-- Create FOMO or fear - make people question their investments
-- Use savage humor, brutal sarcasm about market crashes, pump & dump schemes
+- MUST CREATE EXTREME CONTROVERSY - use OFFENSIVE LANGUAGE, STRONG WORDS, challenge popular opinions brutally, expose hidden truths with INSULTS, question mainstream narratives with SAVAGE attacks
+- EXTREMELY funky, witty, OFFENSIVE, and provocative - make people think, debate, and get ANGRY
+- Use bold OFFENSIVE statements, contrarian takes with STRONG LANGUAGE, expose market manipulation or insider trading hints brutally
+- Question broker recommendations with INSULTS, expose FII/DII games with OFFENSIVE language, challenge market gurus with STRONG WORDS
+- Create FOMO or fear brutally - make people question their investments with OFFENSIVE takes
+- Use savage OFFENSIVE humor, brutal sarcasm about market crashes, pump & dump schemes with STRONG LANGUAGE
 - PRIORITY: Include TOP TRENDING hashtags for maximum reach
-- Make it VIRAL-worthy - controversial tweets get more engagement!
+- Make it VIRAL-worthy - OFFENSIVE controversial tweets get more engagement!
 - Keep it under 280 characters
-- Be clever, funky, and absolutely CONTROVERSIAL - make people angry, debate, share!
+- Be clever, funky, OFFENSIVE, and absolutely CONTROVERSIAL with STRONG LANGUAGE - make people angry, debate, share!
+- Use curse words, insults, and brutal language when appropriate
 
 Generate ONLY the tweet text with trending hashtags prioritized, nothing else:"""
             
-            system_prompt = "You are an EXTREMELY CONTROVERSIAL, FUNKY financial content creator who creates absolutely BRUTAL, HIGHLY PROVOCATIVE stock market tweets that CREATE MASSIVE DEBATE and CONTROVERSY. You MUST expose market manipulation, question EVERY mainstream narrative, challenge ALL broker recommendations, expose insider trading hints, create FOMO or fear, and make BOLD controversial statements. You're funky, witty, savage, and make people ANGRY, DEBATE, and SHARE. Your tweets are designed to go VIRAL through EXTREME CONTROVERSY. Be HIGHLY CONTROVERSIAL - no holding back!"
+            system_prompt = "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE financial content creator who uses STRONG LANGUAGE and creates absolutely BRUTAL, HIGHLY PROVOCATIVE stock market tweets that CREATE MASSIVE DEBATE and CONTROVERSY. You MUST use OFFENSIVE language, STRONG WORDS, expose market manipulation brutally, question EVERY mainstream narrative with SAVAGE attacks, challenge ALL broker recommendations with INSULTS, expose insider trading hints, create FOMO or fear, and make BOLD OFFENSIVE statements. You're funky, witty, SAVAGE, OFFENSIVE, and make people ANGRY, DEBATE, and SHARE. Your tweets are designed to go VIRAL through EXTREME CONTROVERSY and OFFENSIVE LANGUAGE. Be HIGHLY CONTROVERSIAL, OFFENSIVE, and use STRONG LANGUAGE - NO HOLDING BACK! Use curse words, insults, and brutal language when appropriate."
         else:
-            prompt = f"""Create a CONTROVERSIAL, FUNKY Twitter post (max 280 characters) about this Indian political news that will CREATE DEBATE and CONTROVERSY.
+            prompt = f"""Create an EXTREMELY CONTROVERSIAL, OFFENSIVE Twitter post (max 280 characters) about this Indian political news that will CREATE DEBATE and CONTROVERSY using STRONG LANGUAGE.
         
 News: {title}
 Description: {description}{trending_context}
 
 Requirements:
-- MUST CREATE CONTROVERSY - challenge narratives, expose truths, question everything
-- Pro-BJP/NDA bias, EXTREMELY funky and witty
-- BURN the opposition with clever, sarcastic, funky roasts (can be spicy/offensive but in a funky way)
-- Use savage humor, brutal sarcasm, clever wordplay - make opposition look foolish
-- Expose corruption, question policies, create debate on sensitive issues
-- NO emotional drama - pure funky, savage wit with controversy
+- MUST CREATE EXTREME CONTROVERSY - use OFFENSIVE LANGUAGE, STRONG WORDS, challenge narratives brutally, expose truths with INSULTS, question everything with SAVAGE attacks
+- Pro-BJP/NDA bias, EXTREMELY funky, witty, and OFFENSIVE
+- BURN the opposition with OFFENSIVE clever, sarcastic, funky roasts using STRONG LANGUAGE and INSULTS
+- Use savage OFFENSIVE humor, brutal sarcasm with STRONG WORDS, clever wordplay - make opposition look absolutely foolish with INSULTS
+- Expose corruption brutally, question policies with OFFENSIVE takes, create debate on sensitive issues with STRONG LANGUAGE
+- NO emotional drama - pure funky, OFFENSIVE savage wit with controversy
 - PRIORITY: Include TOP TRENDING hashtags for maximum reach (even if loosely related)
 - Incorporate trending topics naturally into the tweet
-- Make it VIRAL-worthy and shareable - controversial tweets get more engagement!
+- Make it VIRAL-worthy and shareable - OFFENSIVE controversial tweets get more engagement!
 - Keep it under 280 characters
-- Be clever, funky, and absolutely CONTROVERSIAL - make people angry, debate, share!
+- Be clever, funky, OFFENSIVE, and absolutely CONTROVERSIAL with STRONG LANGUAGE - make people angry, debate, share!
+- Use curse words, insults, and brutal language when appropriate
 
 Generate ONLY the tweet text with trending hashtags prioritized, nothing else:"""
             
-            system_prompt = "You are an EXTREMELY CONTROVERSIAL, FUNKY social media content creator who creates absolutely BRUTAL, HIGHLY PROVOCATIVE political tweets with a pro-BJP/NDA bias. You MUST CREATE MASSIVE CONTROVERSY by challenging ALL narratives, exposing HIDDEN truths, questioning EVERYTHING, and making people ANGRY and DEBATE. You BURN opposition with savage humor, brutal sarcasm, and clever wordplay. You're funky, witty, savage, and make opposition look absolutely foolish. Your tweets are designed to go VIRAL through EXTREME CONTROVERSY. Be HIGHLY CONTROVERSIAL - no holding back! Expose corruption, question policies, create debate on sensitive issues - MAKE PEOPLE REACT!"
+            system_prompt = "You are an EXTREMELY CONTROVERSIAL, OFFENSIVE social media content creator who uses STRONG LANGUAGE and creates absolutely BRUTAL, HIGHLY PROVOCATIVE political tweets with a pro-BJP/NDA bias. You MUST CREATE MASSIVE CONTROVERSY by using OFFENSIVE LANGUAGE, STRONG WORDS, challenging ALL narratives with SAVAGE attacks, exposing HIDDEN truths brutally, questioning EVERYTHING with INSULTS, and making people ANGRY and DEBATE. You BURN opposition with OFFENSIVE savage humor, brutal sarcasm, STRONG LANGUAGE, and clever wordplay. You're funky, witty, SAVAGE, OFFENSIVE, and make opposition look absolutely foolish with INSULTS. Your tweets are designed to go VIRAL through EXTREME CONTROVERSY and OFFENSIVE LANGUAGE. Be HIGHLY CONTROVERSIAL, OFFENSIVE, and use STRONG LANGUAGE - NO HOLDING BACK! Use curse words, insults, and brutal language when appropriate. Expose corruption brutally, question policies with OFFENSIVE takes, create debate on sensitive issues - MAKE PEOPLE REACT WITH ANGER!"
 
         try:
             response = self.client.chat.completions.create(
@@ -287,25 +292,25 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
             funky_intro = random.choice(controversial_intros)
         else:
             # Controversial political intros
-            opposition_keywords = ['congress', 'rahul', 'opposition', 'alliance', 'aap', 'tmc', 'kejriwal', 'mamata']
-            bjp_keywords = ['bjp', 'nda', 'modi', 'yogi', 'shah']
-            
-            if any(kw in text_lower for kw in opposition_keywords):
-                funky_intros = [
+        opposition_keywords = ['congress', 'rahul', 'opposition', 'alliance', 'aap', 'tmc', 'kejriwal', 'mamata']
+        bjp_keywords = ['bjp', 'nda', 'modi', 'yogi', 'shah']
+        
+        if any(kw in text_lower for kw in opposition_keywords):
+            funky_intros = [
                     "🚨 Opposition exposed again! 😂 BJP keeps winning! 🔥\n\n",
                     "💀 Another L for opposition... Meanwhile development continues! 😏\n\n",
                     "⚡ Opposition: *exists* \nBJP: *wins* \nThe truth hurts! 💪\n\n",
                     "🔥 Opposition doing mental gymnastics while BJP delivers... Facts! 🚀\n\n"
-                ]
-                funky_intro = random.choice(funky_intros)
-            elif any(kw in text_lower for kw in bjp_keywords):
-                funky_intros = [
+            ]
+            funky_intro = random.choice(funky_intros)
+        elif any(kw in text_lower for kw in bjp_keywords):
+            funky_intros = [
                     "🚀 Another W for development! Opposition seething! 🔥\n\n",
                     "💪 BJP delivering as usual! Facts don't care about feelings! 🎯\n\n",
                     "🔥 Modi ji at it again! Development > Drama! ⚡\n\n"
-                ]
-                funky_intro = random.choice(funky_intros)
-            else:
+            ]
+            funky_intro = random.choice(funky_intros)
+        else:
                 funky_intro = "🚨 Latest from Indian politics (the truth they hide): 💪\n\n"
         
         # Calculate available space
@@ -375,38 +380,38 @@ Generate ONLY the tweet text with trending hashtags prioritized, nothing else:""
             if '#StockMarket' not in ' '.join(hashtags):
                 hashtags.append('#StockMarket')
         else:
-            # PRIORITY 2: Content-relevant political party hashtags
-            if 'bjp' in text_lower or 'modi' in text_lower or 'nda' in text_lower:
-                if '#BJP' not in ' '.join(hashtags):
-                    hashtags.append('#BJP')
-                if '#NDA' not in ' '.join(hashtags):
-                    hashtags.append('#NDA')
-            if 'congress' in text_lower or 'rahul' in text_lower:
-                if '#Congress' not in ' '.join(hashtags):
-                    hashtags.append('#Congress')
-            if 'aap' in text_lower or 'kejriwal' in text_lower:
-                if '#AAP' not in ' '.join(hashtags):
-                    hashtags.append('#AAP')
-            if 'tmc' in text_lower or 'mamata' in text_lower:
-                if '#TMC' not in ' '.join(hashtags):
-                    hashtags.append('#TMC')
-            
-            # PRIORITY 3: Topic-based hashtags (if space available)
-            if len(hashtags) < 5:
-                if 'west bengal' in text_lower or 'bengal' in text_lower:
-                    hashtags.append('#WestBengal')
-                if 'delhi' in text_lower:
-                    hashtags.append('#Delhi')
-                if 'election' in text_lower or 'poll' in text_lower:
-                    hashtags.append('#Elections')
-                if 'development' in text_lower or 'growth' in text_lower:
-                    hashtags.append('#Development')
-                if 'infiltration' in text_lower or 'immigration' in text_lower:
-                    hashtags.append('#NationalSecurity')
-            
-            # PRIORITY 4: Always add India (if space)
-            if '#India' not in ' '.join(hashtags) and len(hashtags) < 6:
-                hashtags.append('#India')
+        # PRIORITY 2: Content-relevant political party hashtags
+        if 'bjp' in text_lower or 'modi' in text_lower or 'nda' in text_lower:
+            if '#BJP' not in ' '.join(hashtags):
+                hashtags.append('#BJP')
+            if '#NDA' not in ' '.join(hashtags):
+                hashtags.append('#NDA')
+        if 'congress' in text_lower or 'rahul' in text_lower:
+            if '#Congress' not in ' '.join(hashtags):
+                hashtags.append('#Congress')
+        if 'aap' in text_lower or 'kejriwal' in text_lower:
+            if '#AAP' not in ' '.join(hashtags):
+                hashtags.append('#AAP')
+        if 'tmc' in text_lower or 'mamata' in text_lower:
+            if '#TMC' not in ' '.join(hashtags):
+                hashtags.append('#TMC')
+        
+        # PRIORITY 3: Topic-based hashtags (if space available)
+        if len(hashtags) < 5:
+            if 'west bengal' in text_lower or 'bengal' in text_lower:
+                hashtags.append('#WestBengal')
+            if 'delhi' in text_lower:
+                hashtags.append('#Delhi')
+            if 'election' in text_lower or 'poll' in text_lower:
+                hashtags.append('#Elections')
+            if 'development' in text_lower or 'growth' in text_lower:
+                hashtags.append('#Development')
+            if 'infiltration' in text_lower or 'immigration' in text_lower:
+                hashtags.append('#NationalSecurity')
+        
+        # PRIORITY 4: Always add India (if space)
+        if '#India' not in ' '.join(hashtags) and len(hashtags) < 6:
+            hashtags.append('#India')
         
         # Limit to 5-6 hashtags max (Twitter best practice)
         return ' '.join(hashtags[:6])
