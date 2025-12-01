@@ -19,16 +19,66 @@ class TwitterAutomation:
         self.news_tracker = NewsTracker()
         self.post_counter = 0  # Track post count for alternating
         
-    def _should_post_stock_market(self):
+    def _should_post_now(self):
         """
-        Determine if this should be a stock market post (6 out of 12 posts)
-        Stock market posts at: 9, 10, 14, 15, 17, 19 (6 posts)
-        Politics posts at: 7, 8, 12, 13, 18, 21 (6 posts)
+        Randomly decide if we should post now (to avoid looking automated)
+        Returns: (should_post: bool, is_stock_market: bool)
         """
-        current_hour = datetime.now().hour
-        # Stock market posts at: 9 AM, 10 AM, 2 PM, 3 PM, 5 PM, 7 PM (6 posts)
-        stock_market_hours = [9, 10, 14, 15, 17, 19]
-        return current_hour in stock_market_hours
+        import random
+        import hashlib
+        
+        current_time = datetime.now()
+        current_hour = current_time.hour
+        current_date = current_time.strftime('%Y-%m-%d')
+        
+        # Use date + hour as seed for consistent randomness per day
+        seed_string = f"{current_date}_{current_hour}"
+        seed = int(hashlib.md5(seed_string.encode()).hexdigest(), 16) % (10**8)
+        random.seed(seed)
+        
+        # Define time windows for posting (spread throughout the day)
+        morning_window = (7, 11)    # 7 AM - 11 AM
+        afternoon_window = (12, 16)  # 12 PM - 4 PM
+        evening_window = (17, 22)    # 5 PM - 10 PM
+        
+        # Check if current hour is in any window
+        in_morning = morning_window[0] <= current_hour < morning_window[1]
+        in_afternoon = afternoon_window[0] <= current_hour < afternoon_window[1]
+        in_evening = evening_window[0] <= current_hour < evening_window[1]
+        
+        if not (in_morning or in_afternoon or in_evening):
+            return False, False  # Outside posting windows
+        
+        # Random probability based on window (higher during peak hours)
+        if in_morning:
+            post_probability = random.uniform(0.3, 0.5)  # 30-50% chance
+        elif in_afternoon:
+            post_probability = random.uniform(0.4, 0.6)  # 40-60% chance
+        else:  # evening
+            post_probability = random.uniform(0.35, 0.55)  # 35-55% chance
+        
+        # Decide if we should post
+        should_post = random.random() < post_probability
+        
+        if not should_post:
+            return False, False
+        
+        # Determine post type based on hour and random factor
+        # Stock market: prefer 9-11 AM, 2-4 PM, 5-7 PM
+        # Politics: prefer 7-9 AM, 12-2 PM, 6-10 PM
+        stock_market_preferred = (
+            (9 <= current_hour < 11) or  # Morning trading
+            (14 <= current_hour < 16) or  # Afternoon trading
+            (17 <= current_hour < 19)     # Market close/evening
+        )
+        
+        # Randomly decide type with bias toward preferred times
+        if stock_market_preferred:
+            is_stock_market = random.random() < 0.65  # 65% chance for stock market
+        else:
+            is_stock_market = random.random() < 0.35  # 35% chance for stock market
+        
+        return True, is_stock_market
     
     def post_tweet(self):
         """
@@ -40,10 +90,15 @@ class TwitterAutomation:
         print(f"⏰ Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("="*50)
         
-        # Determine post type
-        is_stock_market = self._should_post_stock_market()
+        # Randomly decide if we should post now (to avoid looking automated)
+        should_post, is_stock_market = self._should_post_now()
+        
+        if not should_post:
+            print(f"\n⏸️  Not posting at this time (randomized schedule)")
+            return
+        
         post_type = "📈 Stock Market" if is_stock_market else "🏛️  Politics"
-        print(f"\n📌 Post type: {post_type}")
+        print(f"\n📌 Post type: {post_type} (random time)")
         
         # STEP 1: Fetch trending topics FIRST (priority for maximum reach)
         print("\n🔥 Fetching Twitter trends (PRIORITY)...")
