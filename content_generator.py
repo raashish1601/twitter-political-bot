@@ -1,11 +1,11 @@
 """
 Content Generator Module - Creates funky, witty tweets using OpenAI
 """
-import openai
 import os
 import re
 import random
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 
