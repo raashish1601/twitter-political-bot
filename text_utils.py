@@ -79,22 +79,40 @@ def ensure_complete_tweet(tweet_text: str, max_length: int = 280) -> str:
     
     # If tweet is already under limit, check if it ends properly
     if len(tweet_text) <= max_length:
-        # Check if tweet ends with incomplete sentence
-        # Look for patterns like "...", incomplete words, or trailing punctuation without space
-        if tweet_text.endswith("'s...") or tweet_text.endswith("'s ") or tweet_text.endswith("'s"):
-            # Ends with possessive - might be incomplete, try to find sentence boundary
-            # Look for last complete sentence
+        # Check if tweet ends with incomplete sentence markers
+        # If ends with "...", find the last complete sentence before it
+        if tweet_text.endswith('...') or tweet_text.endswith("'s...") or tweet_text.endswith("'s "):
+            # Find the last complete sentence ending before the ellipsis
+            # Remove the "..." and find last sentence boundary
+            text_before_ellipsis = tweet_text.rstrip('...').rstrip()
+            
+            # Look for last sentence ending
+            for ending in ['. ', '! ', '? ', '.', '!', '?']:
+                pos = text_before_ellipsis.rfind(ending)
+                if pos > len(text_before_ellipsis) * 0.6:
+                    # Found a sentence ending - use everything up to that point
+                    if ending.endswith(' '):
+                        return text_before_ellipsis[:pos + len(ending)].strip()
+                    else:
+                        # Ending without space - check if there's space after
+                        if pos + 1 < len(text_before_ellipsis) and text_before_ellipsis[pos + 1] == ' ':
+                            return text_before_ellipsis[:pos + 2].strip()
+                        else:
+                            return text_before_ellipsis[:pos + 1].strip()
+            
+            # No sentence ending found - try to find a natural break
+            # Look for comma or dash before the ellipsis
+            for break_point in [', ', ' - ', ' | ']:
+                pos = text_before_ellipsis.rfind(break_point)
+                if pos > len(text_before_ellipsis) * 0.7:
+                    return text_before_ellipsis[:pos + len(break_point)].strip()
+        
+        # Check if ends with incomplete word (possessive without completion)
+        if tweet_text.endswith("'s") or tweet_text.endswith("'s "):
+            # Find last complete sentence
             for ending in ['. ', '! ', '? ']:
                 pos = tweet_text.rfind(ending)
                 if pos > len(tweet_text) * 0.6:
-                    return tweet_text[:pos + len(ending)].strip()
-        
-        # If ends with ellipsis and is much shorter, might be incomplete
-        if tweet_text.endswith('...') and len(tweet_text) < max_length * 0.9:
-            # Try to find a better ending point
-            for ending in ['. ', '! ', '? ']:
-                pos = tweet_text.rfind(ending)
-                if pos > len(tweet_text) * 0.7:
                     return tweet_text[:pos + len(ending)].strip()
         
         return tweet_text
