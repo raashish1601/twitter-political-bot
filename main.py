@@ -12,7 +12,6 @@ from news_fetcher import NewsFetcher
 from content_generator import ContentGenerator
 from twitter_poster import TwitterPoster
 from news_tracker import NewsTracker
-from scheduler import TweetScheduler
 from mention_handler import MentionHandler
 
 class TwitterAutomation:
@@ -393,15 +392,11 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == '--test':
         # Test mode - run once (with optional force flag)
         automation.run_once(force_post=force_post)
-    elif len(sys.argv) > 1 and sys.argv[1] == '--scheduled':
-        # Scheduled mode - run continuously
-        automation.run_scheduled()
     else:
         # Default: run once
         print("Usage:")
         print("  python main.py --test           # Run once (test mode)")
         print("  python main.py --test --force   # Run once, always post (manual trigger)")
-        print("  python main.py --scheduled      # Run with scheduler (production)")
         print("\nRunning in test mode...\n")
         automation.run_once(force_post=force_post)
 
