@@ -183,9 +183,11 @@ class TwitterPoster:
     def _get_trending_from_newsapi(self):
         """
         Fallback: Get trending topics from NewsAPI by fetching popular news
+        Improved version that generates better trending topics
         """
         try:
             import os
+            import re
             from datetime import datetime, timedelta
             news_api_key = os.getenv('NEWS_API_KEY')
             
@@ -193,64 +195,144 @@ class TwitterPoster:
                 print("⚠️  NEWS_API_KEY not found, cannot fetch trending topics")
                 return []
             
-            # Fetch popular news from India (sorted by popularity/relevancy)
-            base_url = 'https://newsapi.org/v2/everything'
-            from_date = (datetime.now() - timedelta(hours=6)).strftime('%Y-%m-%dT%H:%M:%S')
+            trending_topics = []
+            seen_topics = set()
             
-            params = {
-                'q': 'India OR Indian',
-                'language': 'en',
-                'sortBy': 'popularity',  # Sort by popularity to get trending topics
-                'pageSize': 20,
-                'from': from_date,
-                'apiKey': news_api_key
-            }
-            
-            response = requests.get(base_url, params=params, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            
-            if data.get('status') == 'ok':
-                articles = data.get('articles', [])
+            # Method 1: Try top headlines from India (most reliable)
+            try:
+                headlines_url = 'https://newsapi.org/v2/top-headlines'
+                params = {
+                    'country': 'in',  # India
+                    'pageSize': 30,
+                    'apiKey': news_api_key
+                }
                 
-                # Extract trending topics from article titles
-                trending_topics = []
-                seen_topics = set()
-                
-                for article in articles[:15]:
-                    title = article.get('title', '')
-                    if title:
-                        # Extract key terms from title (remove common words)
-                        words = title.split()
-                        # Get capitalized words or important terms (length > 4)
-                        key_terms = []
-                        for word in words:
-                            word_clean = word.strip('.,!?;:()[]{}"\'').strip()
-                            # Include if it's capitalized (likely a name/topic) or is a significant word
-                            if (word_clean and len(word_clean) > 4 and 
-                                (word_clean[0].isupper() or word_clean.lower() not in 
-                                 ['india', 'indian', 'news', 'latest', 'breaking', 'update', 'report', 'says', 'will', 'this', 'that', 'with', 'from', 'about'])):
-                                key_terms.append(word_clean)
+                response = requests.get(headlines_url, params=params, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('status') == 'ok':
+                        articles = data.get('articles', [])
                         
-                        # Create topic from key terms
-                        if key_terms:
-                            topic = ' '.join(key_terms[:3])  # Take first 3 key terms
-                            topic_normalized = topic.lower()
-                            if topic_normalized not in seen_topics and len(topic) > 5:
-                                trending_topics.append(topic)
-                                seen_topics.add(topic_normalized)
-                
-                # Also add hashtag versions
-                hashtag_topics = [f"#{topic.replace(' ', '')}" if not topic.startswith('#') else topic 
-                                 for topic in trending_topics[:10]]
-                
-                print(f"✅ Generated {len(hashtag_topics)} trending topics from NewsAPI")
-                return hashtag_topics[:10]
+                        for article in articles[:20]:
+                            title = article.get('title', '')
+                            if title:
+                                # Extract trending keywords from title
+                                topics = self._extract_trending_keywords(title)
+                                for topic in topics:
+                                    topic_lower = topic.lower()
+                                    if topic_lower not in seen_topics and len(topic) > 3:
+                                        trending_topics.append(topic)
+                                        seen_topics.add(topic_lower)
+            except Exception as e:
+                print(f"⚠️  Top headlines failed: {str(e)[:50]}")
             
-            return []
+            # Method 2: If not enough topics, try everything endpoint
+            if len(trending_topics) < 5:
+                try:
+                    everything_url = 'https://newsapi.org/v2/everything'
+                    from_date = (datetime.now() - timedelta(hours=12)).strftime('%Y-%m-%dT%H:%M:%S')
+                    
+                    params = {
+                        'q': 'India',
+                        'language': 'en',
+                        'sortBy': 'popularity',
+                        'pageSize': 30,
+                        'from': from_date,
+                        'apiKey': news_api_key
+                    }
+                    
+                    response = requests.get(everything_url, params=params, timeout=10)
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data.get('status') == 'ok':
+                            articles = data.get('articles', [])
+                            
+                            for article in articles[:20]:
+                                title = article.get('title', '')
+                                if title:
+                                    topics = self._extract_trending_keywords(title)
+                                    for topic in topics:
+                                        topic_lower = topic.lower()
+                                        if topic_lower not in seen_topics and len(topic) > 3:
+                                            trending_topics.append(topic)
+                                            seen_topics.add(topic_lower)
+                except Exception as e:
+                    print(f"⚠️  Everything endpoint failed: {str(e)[:50]}")
+            
+            # Method 3: Add popular Indian topics as fallback
+            if len(trending_topics) < 3:
+                popular_topics = [
+                    'Modi', 'BJP', 'Congress', 'RahulGandhi', 'YogiAdityanath',
+                    'StockMarket', 'Nifty', 'Sensex', 'IndianEconomy',
+                    'Delhi', 'Mumbai', 'Kolkata', 'Chennai', 'Bangalore',
+                    'Elections', 'Politics', 'Development', 'India'
+                ]
+                for topic in popular_topics:
+                    topic_lower = topic.lower()
+                    if topic_lower not in seen_topics:
+                        trending_topics.append(topic)
+                        seen_topics.add(topic_lower)
+            
+            # Convert to hashtags
+            hashtag_topics = []
+            for topic in trending_topics[:15]:
+                if not topic.startswith('#'):
+                    # Clean and convert to hashtag
+                    hashtag = '#' + re.sub(r'[^a-zA-Z0-9]', '', topic)
+                    if len(hashtag) > 1 and hashtag not in hashtag_topics:
+                        hashtag_topics.append(hashtag)
+                else:
+                    if topic not in hashtag_topics:
+                        hashtag_topics.append(topic)
+            
+            print(f"✅ Generated {len(hashtag_topics)} trending topics from NewsAPI")
+            return hashtag_topics[:15]
+            
         except Exception as e:
             print(f"⚠️  Could not fetch trending topics from NewsAPI: {e}")
-            return []
+            # Return some default trending topics as last resort
+            return ['#India', '#Politics', '#News', '#Trending', '#Breaking']
+    
+    def _extract_trending_keywords(self, title):
+        """
+        Extract trending keywords from a news title
+        """
+        import re
+        
+        # Common words to ignore
+        stop_words = {
+            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+            'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
+            'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
+            'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that',
+            'these', 'those', 'india', 'indian', 'news', 'latest', 'breaking',
+            'update', 'report', 'says', 'said', 'according', 'source'
+        }
+        
+        # Extract words (keep capitalized words, numbers, and important terms)
+        words = re.findall(r'\b[A-Z][a-z]+\b|\b[A-Z]{2,}\b|\b\d+\b', title)
+        
+        keywords = []
+        for word in words:
+            word_lower = word.lower()
+            # Skip if it's a stop word or too short
+            if word_lower not in stop_words and len(word) > 2:
+                keywords.append(word)
+        
+        # Also extract quoted phrases (often trending topics)
+        quoted = re.findall(r'"([^"]+)"', title)
+        for phrase in quoted:
+            # Extract key words from quoted phrase
+            phrase_words = re.findall(r'\b[A-Z][a-z]+\b', phrase)
+            keywords.extend(phrase_words[:2])
+        
+        # Extract topics before colons (common in news titles)
+        if ':' in title:
+            before_colon = title.split(':')[0]
+            colon_keywords = re.findall(r'\b[A-Z][a-z]+\b', before_colon)
+            keywords.extend(colon_keywords[:2])
+        
+        return keywords[:5]  # Return top 5 keywords
     
     def _scrape_twitter_trends(self):
         """
