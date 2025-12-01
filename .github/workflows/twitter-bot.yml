@@ -50,6 +50,8 @@ jobs:
         echo "TWITTER_ACCESS_TOKEN_SECRET=${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}" >> .env
         echo "NEWS_API_KEY=${{ secrets.NEWS_API_KEY }}" >> .env
         echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> .env
+        echo "HUGGINGFACE_API_KEY=${{ secrets.HUGGINGFACE_API_KEY }}" >> .env
         echo "✅ .env file created (checking if variables are set...)"
         if [ -z "${{ secrets.TWITTER_API_KEY }}" ]; then
           echo "⚠️  WARNING: TWITTER_API_KEY secret is not set!"
