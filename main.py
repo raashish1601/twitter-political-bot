@@ -1,9 +1,11 @@
 """
 Main Twitter Automation Script
-Fetches latest Indian political and stock market news and posts controversial funky tweets 7 times daily
+Fetches latest Indian political and stock market news and posts controversial funky tweets with random timing
 """
 import sys
 import os
+import random
+import hashlib
 from datetime import datetime
 from news_fetcher import NewsFetcher
 from content_generator import ContentGenerator
@@ -22,11 +24,9 @@ class TwitterAutomation:
     def _should_post_now(self):
         """
         Randomly decide if we should post now (to avoid looking automated)
+        Uses date-based seed for consistent randomness per day, but different each day
         Returns: (should_post: bool, is_stock_market: bool)
         """
-        import random
-        import hashlib
-        
         current_time = datetime.now()
         current_hour = current_time.hour
         current_date = current_time.strftime('%Y-%m-%d')
