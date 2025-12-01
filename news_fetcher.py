@@ -126,6 +126,41 @@ class NewsFetcher:
         # Return reordered articles
         return [article for score, article in scored_articles]
     
+    def fetch_stock_market_news(self, max_results=10):
+        """
+        Fetch latest Indian stock market news
+        """
+        # Keywords for Indian stock markets
+        query = '(NSE OR BSE OR "Indian stock market" OR "Sensex" OR "Nifty" OR "stock market" OR "share market" OR "equity market" OR "IPO" OR "stocks" OR "investors") AND India'
+        
+        # Get news from last 24 hours
+        from_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        
+        params = {
+            'q': query,
+            'language': 'en',
+            'sortBy': 'publishedAt',
+            'pageSize': max_results,
+            'from': from_date,
+            'apiKey': self.api_key
+        }
+        
+        try:
+            response = requests.get(self.base_url, params=params, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            if data.get('status') == 'ok':
+                articles = data.get('articles', [])
+                return articles[:5]  # Return top 5
+            else:
+                print(f"News API error: {data.get('message', 'Unknown error')}")
+                return []
+                
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching stock market news: {e}")
+            return []
+    
     def get_article_summary(self, article):
         """
         Extract key information from article

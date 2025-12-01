@@ -1,6 +1,6 @@
 """
 Main Twitter Automation Script
-Fetches latest Indian political news and posts funky tweets 2-3 times daily
+Fetches latest Indian political and stock market news and posts controversial funky tweets 7 times daily
 """
 import sys
 import os
@@ -17,16 +17,32 @@ class TwitterAutomation:
         self.content_generator = ContentGenerator()
         self.twitter_poster = TwitterPoster()
         self.news_tracker = NewsTracker()
+        self.post_counter = 0  # Track post count for alternating
         
+    def _should_post_stock_market(self):
+        """
+        Determine if this should be a stock market post (3-4 out of 7 posts)
+        Using time-based logic: posts at 9 AM, 2 PM, 5 PM, 7 PM are stock market
+        """
+        current_hour = datetime.now().hour
+        # Stock market posts at: 9 AM, 2 PM, 5 PM, 7 PM (4 posts)
+        stock_market_hours = [9, 14, 17, 19]
+        return current_hour in stock_market_hours
+    
     def post_tweet(self):
         """
         Main function to fetch news, generate tweet, and post
-        PRIORITY: Trending topics for maximum reach
+        Alternates between political and stock market news
         """
         print("\n" + "="*50)
         print(f"🔄 Starting tweet posting process...")
         print(f"⏰ Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("="*50)
+        
+        # Determine post type
+        is_stock_market = self._should_post_stock_market()
+        post_type = "📈 Stock Market" if is_stock_market else "🏛️  Politics"
+        print(f"\n📌 Post type: {post_type}")
         
         # STEP 1: Fetch trending topics FIRST (priority for maximum reach)
         print("\n🔥 Fetching Twitter trends (PRIORITY)...")
@@ -38,12 +54,16 @@ class TwitterAutomation:
             print("⚠️  Could not fetch trends, continuing without them...")
             trending_topics = []
         
-        # STEP 2: Fetch latest news
-        print("\n📰 Fetching latest news...")
-        articles = self.news_fetcher.fetch_latest_news(max_results=15)
+        # STEP 2: Fetch latest news (political or stock market)
+        if is_stock_market:
+            print("\n📈 Fetching latest stock market news...")
+            articles = self.news_fetcher.fetch_stock_market_news(max_results=15)
+        else:
+            print("\n📰 Fetching latest political news...")
+            articles = self.news_fetcher.fetch_latest_news(max_results=15)
         
         if not articles:
-            print("❌ No news articles found. Skipping this post.")
+            print(f"❌ No {post_type.lower()} articles found. Skipping this post.")
             return
         
         print(f"✅ Found {len(articles)} articles")
@@ -65,16 +85,20 @@ class TwitterAutomation:
                 break
         
         if not article_to_post:
-            print("⚠️  All recent articles have already been posted. Skipping.")
+            print(f"⚠️  All recent {post_type.lower()} articles have already been posted. Skipping.")
             return
         
         # Get article summary
         article_summary = self.news_fetcher.get_article_summary(article_to_post)
         print(f"\n📄 Selected article: {article_summary['title'][:80]}...")
         
-        # STEP 5: Generate funky tweet with TRENDING PRIORITY
-        print("\n🤖 Generating funky, ass-burning tweet with TRENDING hashtags...")
-        tweet_text = self.content_generator.generate_funky_tweet(article_summary, trending_topics)
+        # STEP 5: Generate controversial funky tweet with TRENDING PRIORITY
+        print(f"\n🤖 Generating CONTROVERSIAL, funky tweet with TRENDING hashtags...")
+        tweet_text = self.content_generator.generate_funky_tweet(
+            article_summary, 
+            trending_topics, 
+            is_stock_market=is_stock_market
+        )
         print(f"✅ Generated tweet ({len(tweet_text)} chars)")
         print(f"📝 Preview: {tweet_text[:150]}...")
         
@@ -103,6 +127,7 @@ class TwitterAutomation:
                 tweet_text  # Store tweet text for duplicate checking
             )
             print("\n✅ Tweet posted successfully!")
+            self.post_counter += 1
         else:
             print("\n❌ Failed to post tweet.")
     
