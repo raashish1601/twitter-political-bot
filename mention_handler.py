@@ -301,14 +301,17 @@ class MentionHandler:
     def add_mentions_to_tweet(self, tweet_text: str, is_stock_market: bool = False, mentions: List[str] = None) -> str:
         """
         Add relevant @mentions to a tweet for maximum controversy and engagement
-        Ensures tweet stays under 280 characters
+        Ensures tweet stays under 280 characters and is always complete
         """
+        from text_utils import ensure_complete_tweet, truncate_tweet_complete
+        
         # Use provided mentions or extract them
         if mentions is None:
             mentions = self.extract_mentions(tweet_text, is_stock_market)
         
         if not mentions:
-            return tweet_text
+            # Even without mentions, ensure tweet is complete
+            return ensure_complete_tweet(tweet_text, max_length=280)
         
         # Calculate space needed for mentions
         mentions_text = ' ' + ' '.join(mentions)
@@ -320,18 +323,23 @@ class MentionHandler:
         
         if total_length <= 280:
             # Simple case: just append mentions
-            return tweet_text + mentions_text
+            result = tweet_text + mentions_text
+            # Ensure the final result is complete
+            return ensure_complete_tweet(result, max_length=280)
         else:
             # Need to trim tweet to fit mentions
-            available_space = 280 - mentions_length - 3  # -3 for "..."
+            available_space = 280 - mentions_length
             
             if available_space < 50:  # Too little space, don't add mentions
-                return tweet_text
+                # But still ensure tweet is complete
+                return ensure_complete_tweet(tweet_text, max_length=280)
             
             # Trim tweet at sentence boundary to ensure completeness
-            from text_utils import truncate_tweet_complete
             trimmed_tweet = truncate_tweet_complete(tweet_text, available_space)
-            return trimmed_tweet + mentions_text
+            result = trimmed_tweet + mentions_text
+            
+            # Final check - ensure complete
+            return ensure_complete_tweet(result, max_length=280)
     
     def get_controversy_mentions(self, topic_type: str = 'politics') -> List[str]:
         """
