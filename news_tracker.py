@@ -177,15 +177,22 @@ class NewsTracker:
         
         return False
     
-    def mark_as_posted(self, article_url, article_title, tweet_id, tweet_text=None):
+    def mark_as_posted(self, article_url, article_title, tweet_id, tweet_text=None, description=None):
         """
-        Mark an article as posted (including tweet text for duplicate checking)
+        Mark an article as posted (including tweet text and topic for duplicate checking)
         """
+        # Extract topic for tracking
+        topic = self._extract_topic(article_title, description)
+        if not topic and tweet_text:
+            topic = self._extract_topic_from_tweet(tweet_text)
+        
         self.posted_news.append({
             'url': article_url,
             'title': article_title,
+            'description': description,  # Store description for topic extraction
             'tweet_id': tweet_id,
-            'tweet_text': tweet_text,  # Store tweet text for duplicate detection
+            'tweet_text': tweet_text,  # Store tweet text for duplicate checking
+            'topic': topic,  # Store extracted topic to prevent same topic posts
             'posted_at': datetime.now().isoformat()
         })
         self._save_posted_news()
